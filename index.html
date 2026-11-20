@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GerätePass</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f5f8;color:#202938}
+header{background:#172b46;color:white;padding:22px}
+header h1{margin:0;font-size:25px}
+header p{margin:7px 0 0;color:#bdc9d8}
+main{max-width:1000px;margin:auto;padding:22px}
+h2{margin-top:28px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:white;padding:18px;border-radius:12px;box-shadow:0 2px 8px #0000000a}
+.number{font-size:30px;font-weight:bold;margin-top:8px}
+button{background:#1769aa;color:white;border:0;border-radius:8px;padding:12px 16px;font-weight:bold;cursor:pointer}
+input{padding:12px;border:1px solid #ccd3dd;border-radius:8px;width:100%;margin:7px 0}
+.device{margin-top:12px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+small{color:#64748b}
+.status{font-size:12px;color:#18794e;background:#e6f5ed;padding:6px 9px;border-radius:20px}
+.toolbar{display:flex;gap:10px;margin-top:15px}
+.toolbar input{flex:1;min-width:0}
+@media(min-width:650px){.stats{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header>
+<h1>GerätePass</h1>
+<p>Deine digitale Geräteverwaltung</p>
+</header>
+<main>
+<h2>Dashboard</h2>
+<div class="stats">
+<div class="card">Geräte gesamt<div class="number" id="total">2</div></div>
+<div class="card">In Verwendung<div class="number" id="active">2</div></div>
+<div class="card">Beschädigt<div class="number" id="damaged">0</div></div>
+<div class="card">Wartung fällig<div class="number" id="maintenance">0</div></div>
+</div>
+<h2>Geräteverwaltung</h2>
+<div class="toolbar">
+<input id="search" placeholder="Gerät suchen..." oninput="render()">
+<button onclick="addDevice()">+ Gerät</button>
+</div>
+<div id="devices"></div>
+</main>
+<script>
+let devices=[
+{name:"Akkuschrauber Bosch",id:"GP-001",status:"In Verwendung"},
+{name:"Winkelschleifer Makita",id:"GP-002",status:"In Verwendung"}
+];
+function render(){
+let q=document.getElementById("search").value.toLowerCase();
+let list=devices.filter(d=>(d.name+" "+d.id).toLowerCase().includes(q));
+document.getElementById("devices").innerHTML=list.map(d=>`
+<div class="card device">
+<div><strong>${d.name}</strong><br><small>${d.id}</small></div>
+<span class="status">${d.status}</span>
+</div>`).join("")||"<p>Keine Geräte gefunden.</p>";
+document.getElementById("total").textContent=devices.length;
+document.getElementById("active").textContent=devices.filter(d=>d.status==="In Verwendung").length;
+document.getElementById("damaged").textContent=devices.filter(d=>d.status==="Beschädigt").length;
+document.getElementById("maintenance").textContent=devices.filter(d=>d.status==="Wartung fällig").length;
+}
+function addDevice(){
+let name=prompt("Wie heißt das neue Gerät?");
+if(!name||!name.trim())return;
+let id="GP-"+String(devices.length+1).padStart(3,"0");
+devices.push({name:name.trim(),id,status:"In Verwendung"});
+render();
+}
+render();
+</script>
+</body>
+</html>
