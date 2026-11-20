@@ -192,7 +192,7 @@ async function adminAction(name,args){
 async function syncUser(user){
  if(initialising)return;
  const id=user?.id||null;
- if(id===activeUserId && (companyId || !id))return;
+if(id===activeUserId && companyId)return;
  initialising=true;activeUserId=id;currentUser=user||null;adminPin=null;companyId=null;
  try{
   if(!user){showSection("authSection");return;}
