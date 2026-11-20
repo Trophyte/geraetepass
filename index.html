@@ -575,7 +575,11 @@ function renderDevices(){
    st.textContent="Beschädigt · Reparatur im Admin-Bereich abschließen";
   }else{
    st=document.createElement("select");
-   DEVICE_STATUSES.filter(x=>x!=="Beschädigt").forEach(x=>st.add(new Option(x,x)));
+   const allowedStatuses=d.status==="Wartung fällig"
+ ? ["In Werkstatt / Abgegeben"]
+ : DEVICE_STATUSES.filter(x=>x!=="Beschädigt");
+
+allowedStatuses.forEach(x=>st.add(new Option(x,x)));
    st.value=d.status||"Lager";
    st.addEventListener("change",()=>changeStatus("devices",d.id,st.value,false));
   }
@@ -632,40 +636,107 @@ async function removeDevice(id){
  message("Gerät gelöscht.");await loadAll();
 }
 
+
 function renderVehicles(){
- renderStatusTiles();const box=$("vehicleList");box.replaceChildren();
- const q=$("vehicleSearch").value.toLowerCase(),pf=$("vehiclePersonFilter").value,tf=$("vehicleTypeFilter").value;
- let rows=vehicles.filter(v=>(activeVehicleStatus==="Verfügbar"?(v.status==="Verfügbar"||v.status==="Lager"):v.status===activeVehicleStatus)&&[v.vehicle_name,v.registration_number,v.vehicle_type,v.manufacturer,v.model,v.notes].some(x=>String(x||"").toLowerCase().includes(q))&&(!pf||String(v.assigned_person_id)===pf)&&(!tf||v.vehicle_type===tf));
+ renderStatusTiles();
+ const box=$("vehicleList");
+ box.replaceChildren();
+
+ const q=$("vehicleSearch").value.toLowerCase();
+ const pf=$("vehiclePersonFilter").value;
+ const tf=$("vehicleTypeFilter").value;
+
+ let rows=vehicles.filter(v=>
+  (activeVehicleStatus==="Verfügbar"?(v.status==="Verfügbar"||v.status==="Lager"):v.status===activeVehicleStatus)&&
+  [v.vehicle_name,v.registration_number,v.vehicle_type,v.manufacturer,v.model,v.notes]
+   .some(x=>String(x||"").toLowerCase().includes(q))&&
+  (!pf||String(v.assigned_person_id)===pf)&&
+  (!tf||v.vehicle_type===tf)
+ );
+
  const sort=$("vehicleSort").value;
- rows.sort((a,b)=>sort==="registration"?(a.registration_number||"").localeCompare(b.registration_number||""):sort==="person"?personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id)):sort==="type"?(a.vehicle_type||"").localeCompare(b.vehicle_type||""):(a.vehicle_name||"").localeCompare(b.vehicle_name||""));
+
+ rows.sort((a,b)=>
+  sort==="registration"?(a.registration_number||"").localeCompare(b.registration_number||""):
+  sort==="person"?personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id)):
+  sort==="type"?(a.vehicle_type||"").localeCompare(b.vehicle_type||""):
+  (a.vehicle_name||"").localeCompare(b.vehicle_name||"")
+ );
+
  if(!rows.length){
-  const text=vehicles.length===0?"Noch keine Fahrzeuge angelegt. Lege das erste Fahrzeug in der Administration an.":"Keine Fahrzeuge in diesem Bereich vorhanden.";
-  box.append(Object.assign(document.createElement("div"),{className:"empty",textContent:text}));return;
+  const text=vehicles.length===0
+   ?"Noch keine Fahrzeuge angelegt. Lege das erste Fahrzeug in der Administration an."
+   :"Keine Fahrzeuge in diesem Bereich vorhanden.";
+  box.append(Object.assign(document.createElement("div"),{
+   className:"empty",
+   textContent:text
+  }));
+  return;
  }
+
  rows.forEach(v=>{
-  const c=document.createElement("div");c.className="card item-card "+statusClass(v.status);
-  const h=document.createElement("h3");h.textContent=v.vehicle_name||"Fahrzeug";
-  const info=document.createElement("p");info.className="muted";info.textContent=[v.registration_number,v.vehicle_type,v.manufacturer,v.model].filter(Boolean).join(" · ");
-  const mileage=document.createElement("p");mileage.textContent="Kilometerstand: "+(v.mileage==null?"Nicht eingetragen":Number(v.mileage).toLocaleString("de-AT")+" km");
-  const inspection=document.createElement("p");inspection.textContent="Pickerl gültig bis: "+(v.inspection_due||"Nicht eingetragen");
-  const sl=document.createElement("label");sl.textContent="Status";let st;
-  if(v.status==="Beschädigt"){st=document.createElement("p");st.className="tag";st.textContent="Beschädigt · Reparatur im Admin-Bereich abschließen";}
-  else{
-   st=document.createElement("select");VEHICLE_STATUSES.filter(x=>x!=="Beschädigt").forEach(x=>st.add(new Option(x,x)));
+  const c=document.createElement("div");
+  c.className="card item-card "+statusClass(v.status);
+
+  const h=document.createElement("h3");
+  h.textContent=v.vehicle_name||"Fahrzeug";
+
+  const info=document.createElement("p");
+  info.className="muted";
+  info.textContent=[v.registration_number,v.vehicle_type,v.manufacturer,v.model].filter(Boolean).join(" · ");
+
+  const mileage=document.createElement("p");
+  mileage.textContent="Kilometerstand: "+(v.mileage==null?"Nicht eingetragen":Number(v.mileage).toLocaleString("de-AT")+" km");
+
+  const inspection=document.createElement("p");
+  inspection.textContent="Pickerl gültig bis: "+(v.inspection_due||"Nicht eingetragen");
+
+  const sl=document.createElement("label");
+  sl.textContent="Status";
+
+  let st;
+
+  if(v.status==="Beschädigt"){
+   st=document.createElement("p");
+   st.className="tag";
+   st.textContent="Beschädigt · Reparatur im Admin-Bereich abschließen";
+  }else{
+   st=document.createElement("select");
+   const allowedStatuses=v.status==="Wartung fällig"
+ ? ["In Werkstatt / Abgegeben"]
+ : VEHICLE_STATUSES.filter(x=>x!=="Beschädigt");
+
+allowedStatuses.forEach(x=>st.add(new Option(x,x)));
    st.value=v.status==="Lager"?"Verfügbar":(v.status||"Verfügbar");
    st.addEventListener("change",()=>changeStatus("vehicles",v.id,st.value,true));
   }
-  const pl=document.createElement("label");pl.textContent="Fahrer zuweisen";
-  const person=document.createElement("select");person.add(new Option("Niemand / zurückgeben",""));
-  people.forEach(x=>person.add(new Option(x.name,x.id)));person.value=v.assigned_person_id||"";
+
+  const pl=document.createElement("label");
+  pl.textContent="Fahrer zuweisen";
+
+  const person=document.createElement("select");
+  person.add(new Option("Niemand / zurückgeben",""));
+  people.forEach(x=>person.add(new Option(x.name,x.id)));
+  person.value=v.assigned_person_id||"";
   person.addEventListener("change",()=>changeAssignment("vehicles",v.id,person.value));
-  const notes=document.createElement("p");notes.className="muted";notes.textContent=v.notes||"";
-  const actions=document.createElement("div");actions.className="actions";
-  actions.append(btn("Schaden melden","light",()=>openDamageFor("vehicle",v.id)),btn("QR-Code anzeigen","light",()=>showQr("vehicle",v.id,v.vehicle_name||"Fahrzeug")));
-  if(adminPin)actions.append(btn("Stammdaten bearbeiten","light",()=>editVehicle(v)),btn("Fahrzeug löschen","danger",()=>removeVehicle(v.id)));
-  c.append(h,info,mileage,inspection,sl,st,pl,person,notes,actions);box.append(c);
+
+  const notes=document.createElement("p");
+  notes.className="muted";
+  notes.textContent=v.notes||"";
+
+  const actions=document.createElement("div");
+  actions.className="actions";
+
+  actions.append(
+   btn("Schaden melden","light",()=>openDamageFor("vehicle",v.id)),
+   btn("QR-Code anzeigen","light",()=>showQr("vehicle",v.id,v.vehicle_name||"Fahrzeug"))
+  );
+
+  c.append(h,info,mileage,inspection,sl,st,pl,person,notes,actions);
+  box.append(c);
  });
 }
+
 function selectVehicleStatus(status){activeVehicleStatus=status;renderVehicles();}
 
 async function editVehicle(v){
