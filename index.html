@@ -4,26 +4,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172b46">
 <title>GerätePass</title>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f3f5f8;color:#202938}
-header{background:#172b46;color:white;padding:22px}
-header h1{margin:0;font-size:25px}
-header p{color:#bdc9d8;margin-bottom:0}
-main{max-width:900px;margin:auto;padding:20px}
-.card{background:white;padding:18px;border-radius:12px;margin:12px 0;box-shadow:0 2px 8px #0000000a}
-input,select{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccd3dd;border-radius:8px;font-size:16px}
-button{background:#1769aa;color:white;border:0;border-radius:8px;padding:12px 16px;font-weight:bold;margin:4px 4px 4px 0}
-.delete{background:#b42318}
+header{background:#172b46;color:white;padding:20px}
+header h1{margin:0;font-size:26px}
+header p{color:#bdc9d8;margin:6px 0 0}
+main{max-width:1050px;margin:auto;padding:16px}
+.card{background:white;padding:18px;border-radius:13px;margin:12px 0;box-shadow:0 2px 9px #0000000a}
+input,select,textarea{width:100%;padding:12px;margin:6px 0 14px;border:1px solid #ccd3dd;border-radius:8px;font-size:16px;background:white}
+textarea{min-height:85px}
+button{background:#1769aa;color:white;border:0;border-radius:8px;padding:12px 16px;font-weight:bold;margin:4px 4px 4px 0;cursor:pointer}
+button.secondary{background:#64748b}
+button.danger{background:#b42318}
+button.light{background:#e8eef5;color:#172b46}
+label{font-size:14px;font-weight:bold}
+.hidden{display:none!important}
+#message{padding:10px;color:#1769aa;white-space:pre-wrap}
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.number{font-size:28px;font-weight:bold;margin-top:8px}
-small{color:#64748b}
-.hidden{display:none}
-#message{padding:10px;color:#1769aa}
+.stat{background:white;padding:16px;border-radius:12px}
+.number{font-size:27px;font-weight:bold;margin-top:8px}
+.menu{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0}
+.menu button{min-height:78px;font-size:16px;background:white;color:#172b46;border:1px solid #dce3eb}
+.menu button.selected{background:#1769aa;color:white}
 .device{border-left:4px solid #1769aa}
+.device h3{margin:0 0 8px}
+.muted{color:#64748b;font-size:14px}
+.tag{display:inline-block;background:#e8eef5;padding:5px 9px;border-radius:20px;font-size:12px;margin:4px 0}
+.actions{margin-top:10px}
+.qr{width:150px;height:150px;object-fit:contain;display:block;margin:12px 0}
+hr{border:0;border-top:1px solid #e5eaf0;margin:18px 0}
+@media(min-width:700px){
+.stats{grid-template-columns:repeat(4,1fr)}
+.menu{grid-template-columns:repeat(3,1fr)}
+}
 </style>
 </head>
+
 <body>
 <header>
 <h1>GerätePass</h1>
@@ -31,33 +51,98 @@ small{color:#64748b}
 </header>
 
 <main>
-<section id="login" class="card">
+
+<!-- ANMELDUNG -->
+<section id="authSection" class="card hidden">
 <h2>Anmelden</h2>
-<p>Bitte melde dich mit deinem GerätePass-Konto an.</p>
+<p>Mit dem Firmenkonto anmelden.</p>
 <form id="loginForm">
 <label>E-Mail-Adresse</label>
-<input id="email" type="email" required>
+<input id="email" type="email" required autocomplete="username">
 <label>Passwort</label>
-<input id="password" type="password" required>
+<input id="password" type="password" required autocomplete="current-password">
 <button type="submit">Anmelden</button>
+</form>
+<hr>
+<h3>Neue Firma registrieren</h3>
+<p class="muted">Erstelle zuerst ein Firmenkonto. Danach richtest du deine Firma und den Admin-PIN ein.</p>
+<form id="registerForm">
+<label>Firmen-E-Mail</label>
+<input id="regEmail" type="email" required>
+<label>Passwort</label>
+<input id="regPassword" type="password" minlength="6" required>
+<button type="submit">Konto erstellen</button>
 </form>
 </section>
 
-<section id="app" class="hidden">
-<div style="display:flex;justify-content:space-between;align-items:center">
-<h2>Dashboard</h2>
-<button id="logout">Abmelden</button>
+<!-- FIRMA EINRICHTEN -->
+<section id="setupSection" class="card hidden">
+<h2>Firma einrichten</h2>
+<p>Dein Login ist angemeldet. Jetzt fehlen noch die Firmendaten.</p>
+<form id="setupForm">
+<label>Firmenname</label>
+<input id="companyName" required minlength="2" placeholder="z. B. Muster GmbH">
+<label>Vierstelliger Admin-PIN</label>
+<input id="adminPinSetup" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required placeholder="1234">
+<button type="submit">Firma einrichten</button>
+</form>
+</section>
+
+<!-- APP -->
+<section id="appSection" class="hidden">
+
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<div>
+<h2 id="companyHeading">Dashboard</h2>
+<div class="muted" id="companyLabel"></div>
+</div>
+<button id="logout" class="secondary">Abmelden</button>
 </div>
 
+<nav class="menu">
+<button data-page="dashboard" class="selected">📊 Dashboard</button>
+<button data-page="devices">🧰 Geräte</button>
+<button data-page="people">👷 Personen</button>
+<button data-page="add">➕ Hinzufügen</button>
+<button data-page="maintenance">🔧 Wartung</button>
+<button data-page="damage">⚠️ Schäden</button>
+</nav>
+
+<!-- DASHBOARD -->
+<section id="page-dashboard" class="page">
+<h2>Übersicht</h2>
 <div class="stats">
-<div class="card">Geräte gesamt<div class="number" id="total">0</div></div>
-<div class="card">In Verwendung<div class="number" id="active">0</div></div>
-<div class="card">Beschädigt<div class="number" id="damaged">0</div></div>
-<div class="card">Wartung fällig<div class="number" id="maintenance">0</div></div>
+<div class="stat">Geräte gesamt<div class="number" id="total">0</div></div>
+<div class="stat">In Verwendung<div class="number" id="active">0</div></div>
+<div class="stat">Beschädigt<div class="number" id="damaged">0</div></div>
+<div class="stat">Wartung fällig<div class="number" id="maintenanceCount">0</div></div>
 </div>
+<div class="card">
+<h3>Willkommen bei GerätePass</h3>
+<p>Verwalte hier eure Geräte, Mitarbeiter, Schäden und Wartungen.</p>
+<p class="muted">Statusänderungen und Gerätezuweisungen benötigen keinen Admin-PIN.</p>
+</div>
+</section>
 
-<h2>Neues Gerät</h2>
-<form id="deviceForm" class="card">
+<!-- GERÄTE -->
+<section id="page-devices" class="page hidden">
+<h2>Geräteübersicht</h2>
+<input id="deviceSearch" placeholder="Gerät suchen...">
+<div id="deviceList"></div>
+</section>
+
+<!-- PERSONEN -->
+<section id="page-people" class="page hidden">
+<h2>Personen</h2>
+<p class="muted">Mitarbeiter verwalten. Änderungen benötigen den Admin-PIN.</p>
+<div id="peopleList"></div>
+</section>
+
+<!-- HINZUFÜGEN -->
+<section id="page-add" class="page hidden">
+<h2>Neues Gerät hinzufügen</h2>
+<div class="card">
+<form id="deviceForm">
 <label>Gerätename *</label>
 <input id="deviceName" required placeholder="z. B. Akkuschrauber">
 <label>Hersteller</label>
@@ -66,21 +151,61 @@ small{color:#64748b}
 <input id="model" placeholder="Modell">
 <label>Standort</label>
 <input id="location" placeholder="z. B. Lager">
-<label>Zugewiesener Mitarbeiter</label>
-<input id="assigned" placeholder="Name">
-<label>Status</label>
-<select id="status">
-<option>In Verwendung</option>
-<option>Beschädigt</option>
-<option>Wartung fällig</option>
-<option>Außer Betrieb</option>
-</select>
+<label>Kaufdatum</label>
+<input id="purchaseDate" type="date">
+<label>Notizen</label>
+<textarea id="notes" placeholder="Weitere Informationen"></textarea>
 <button type="submit">Gerät speichern</button>
 </form>
+<p class="muted">Für das Anlegen eines Gerätes wird der Admin-PIN benötigt.</p>
+</div>
 
-<h2>Geräteübersicht</h2>
-<input id="search" placeholder="Gerät suchen...">
-<div id="devices"></div>
+<hr>
+<h3>Neue Person hinzufügen</h3>
+<div class="card">
+<form id="personForm">
+<label>Name des Mitarbeiters</label>
+<input id="personName" required placeholder="Vor- und Nachname">
+<button type="submit">Person speichern</button>
+</form>
+<p class="muted">Für das Anlegen einer Person wird der Admin-PIN benötigt.</p>
+</div>
+</section>
+
+<!-- WARTUNG -->
+<section id="page-maintenance" class="page hidden">
+<h2>Wartung</h2>
+<div class="card">
+<h3>Wartung eintragen</h3>
+<form id="maintenanceForm">
+<label>Gerät</label>
+<select id="maintenanceDevice" required></select>
+<label>Beschreibung</label>
+<textarea id="maintenanceDescription" required placeholder="Welche Wartung ist notwendig?"></textarea>
+<label>Fälligkeitsdatum</label>
+<input id="maintenanceDate" type="date">
+<button type="submit">Wartung eintragen</button>
+</form>
+</div>
+<div id="maintenanceList"></div>
+</section>
+
+<!-- SCHÄDEN -->
+<section id="page-damage" class="page hidden">
+<h2>Schadensmeldungen</h2>
+<div class="card">
+<h3>Schaden melden</h3>
+<form id="damageForm">
+<label>Gerät</label>
+<select id="damageDevice" required></select>
+<label>Beschreibung des Schadens</label>
+<textarea id="damageDescription" required placeholder="Was ist passiert?"></textarea>
+<button type="submit">Schaden melden</button>
+</form>
+</div>
+<div id="damageList"></div>
+</section>
+
 </section>
 <div id="message"></div>
 </main>
@@ -89,173 +214,720 @@ small{color:#64748b}
 import { createClient } from
 "https://esm.sh/@supabase/supabase-js@2";
 
-// HIER DEINE BEIDEN SUPABASE-ANGABEN EINTRAGEN:
 const SUPABASE_URL = "https://mfyukedisidacmcbegbj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_O03wMjdn_G6TMGpS7bLXOg_HNNLd28n";
 
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const login = document.getElementById("login");
-const app = document.getElementById("app");
-const message = document.getElementById("message");
+const $ = id => document.getElementById(id);
+
+let currentUser = null;
+let companyId = null;
+let companyName = "";
 let devices = [];
+let people = [];
+let maintenanceItems = [];
+let damageItems = [];
 
-function showMessage(text) {
-  message.textContent = text;
+function message(text) {
+  $("message").textContent = text;
 }
 
-function showApp(user) {
-  login.classList.toggle("hidden", !!user);
-  app.classList.toggle("hidden", !user);
+function showSection(section) {
+  ["authSection","setupSection","appSection"].forEach(id =>
+    $(id).classList.add("hidden")
+  );
+  $(section).classList.remove("hidden");
 }
 
-async function loadDevices() {
-  const { data, error } = await db
-    .from("devices")
-    .select("*")
-    .order("created_at", { ascending: false });
+function escapeText(value) {
+  return String(value ?? "");
+}
+
+async function askPin() {
+  const pin = prompt("Bitte vierstelligen Admin-PIN eingeben:");
+  if (pin === null) return null;
+
+  if (!/^[0-9]{4}$/.test(pin)) {
+    message("Der Admin-PIN muss aus genau vier Ziffern bestehen.");
+    return null;
+  }
+  return pin;
+}
+
+async function verifyPin(pin) {
+  const { data, error } = await db.rpc("verify_admin_pin", {
+    p_pin: pin
+  });
 
   if (error) {
-    showMessage("Fehler beim Laden: " + error.message);
+    message("PIN-Prüfung fehlgeschlagen: " + error.message);
+    return false;
+  }
+
+  if (data !== true) {
+    message("Falscher PIN oder PIN-Sperre aktiv.");
+    return false;
+  }
+  return true;
+}
+
+async function adminAction(rpcName, args) {
+  const pin = await askPin();
+  if (pin === null) return null;
+
+  const { data, error } = await db.rpc(rpcName, {
+    p_pin: pin,
+    ...args
+  });
+
+  if (error) {
+    message("Fehler: " + error.message);
+    return null;
+  }
+
+  if (data === null || data === false) {
+    message("Aktion nicht möglich. PIN prüfen oder Berechtigung kontrollieren.");
+    return null;
+  }
+
+  return data;
+}
+
+async function initialiseUser(user) {
+  currentUser = user;
+  companyId = null;
+
+  if (!user) {
+    showSection("authSection");
     return;
   }
 
-  devices = data || [];
-  render();
+  const { data: membership, error } = await db
+    .from("company_members")
+    .select("company_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    message("Firmenzugriff fehlgeschlagen: " + error.message);
+    return;
+  }
+
+  if (!membership) {
+    showSection("setupSection");
+    return;
+  }
+
+  companyId = membership.company_id;
+
+  const { data: company, error: companyError } = await db
+    .from("companies")
+    .select("id,name")
+    .eq("id", companyId)
+    .single();
+
+  if (companyError) {
+    message("Firma konnte nicht geladen werden: " + companyError.message);
+    return;
+  }
+
+  companyName = company.name;
+  $("companyLabel").textContent = companyName;
+  showSection("appSection");
+
+  await loadAll();
 }
 
-function render() {
-  const q = document.getElementById("search").value.toLowerCase();
-  const list = devices.filter(d =>
-    [d.device_name, d.device_number, d.manufacturer, d.model]
+async function loadAll() {
+  if (!companyId) return;
+
+  const results = await Promise.all([
+    db.from("devices").select("*").eq("company_id", companyId).order("created_at", {ascending:false}),
+    db.from("people").select("*").eq("company_id", companyId).order("name"),
+    db.from("maintenance").select("*").eq("company_id", companyId).order("created_at", {ascending:false}),
+    db.from("damage_reports").select("*").eq("company_id", companyId).order("created_at", {ascending:false})
+  ]);
+
+  const names = ["Geräte","Personen","Wartung","Schäden"];
+
+  for (let i = 0; i < results.length; i++) {
+    if (results[i].error) {
+      message(names[i] + " konnten nicht geladen werden: " + results[i].error.message);
+      return;
+    }
+  }
+
+  devices = results[0].data || [];
+  people = results[1].data || [];
+  maintenanceItems = results[2].data || [];
+  damageItems = results[3].data || [];
+
+  renderAll();
+}
+
+function makeButton(text, className, action) {
+  const button = document.createElement("button");
+  button.textContent = text;
+  if (className) button.className = className;
+  button.addEventListener("click", action);
+  return button;
+}
+
+function makeCard(title, detail) {
+  const card = document.createElement("div");
+  card.className = "card";
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+  const paragraph = document.createElement("p");
+  paragraph.textContent = detail;
+  card.append(heading, paragraph);
+  return card;
+}
+
+function renderAll() {
+  renderDashboard();
+  renderDevices();
+  renderPeople();
+  renderMaintenance();
+  renderDamage();
+  updateDeviceDropdowns();
+}
+
+function renderDashboard() {
+  $("total").textContent = devices.length;
+  $("active").textContent =
+    devices.filter(d => d.status === "In Verwendung").length;
+  $("damaged").textContent =
+    devices.filter(d => d.status === "Beschädigt").length;
+  $("maintenanceCount").textContent =
+    devices.filter(d => d.status === "Wartung fällig").length;
+}
+
+function personName(id) {
+  return people.find(p => p.id === id)?.name || "Niemand zugewiesen";
+}
+
+function renderDevices() {
+  const container = $("deviceList");
+  container.replaceChildren();
+
+  const q = $("deviceSearch").value.toLowerCase();
+
+  const filtered = devices.filter(d =>
+    [d.device_name,d.device_number,d.manufacturer,d.model,d.location]
       .some(v => (v || "").toLowerCase().includes(q))
   );
 
-  document.getElementById("total").textContent = devices.length;
-  document.getElementById("active").textContent =
-    devices.filter(d => d.status === "In Verwendung").length;
-  document.getElementById("damaged").textContent =
-    devices.filter(d => d.status === "Beschädigt").length;
-  document.getElementById("maintenance").textContent =
-    devices.filter(d => d.status === "Wartung fällig").length;
-
-  const container = document.getElementById("devices");
-  container.replaceChildren();
-
-  if (!list.length) {
-    container.textContent = "Noch keine Geräte vorhanden.";
+  if (!filtered.length) {
+    container.textContent = "Keine Geräte gefunden.";
     return;
   }
 
-  list.forEach(d => {
+  filtered.forEach(d => {
     const card = document.createElement("div");
     card.className = "card device";
 
-    const name = document.createElement("strong");
-    name.textContent = d.device_name;
+    const title = document.createElement("h3");
+    title.textContent = d.device_name;
 
-    const details = document.createElement("p");
-    details.textContent =
-      [d.device_number, d.manufacturer, d.model, d.location, d.assigned_to]
-      .filter(Boolean).join(" · ");
+    const detail = document.createElement("p");
+    detail.className = "muted";
+    detail.textContent = [
+      d.device_number,
+      d.manufacturer,
+      d.model,
+      d.location
+    ].filter(Boolean).join(" · ");
+
+    const assigned = document.createElement("p");
+    assigned.textContent = "Zugewiesen an: " + personName(d.assigned_person_id);
+
+    const statusLabel = document.createElement("label");
+    statusLabel.textContent = "Status – ohne PIN änderbar";
 
     const status = document.createElement("select");
-    ["In Verwendung","Beschädigt","Wartung fällig","Außer Betrieb"]
-      .forEach(s => {
-        const option = document.createElement("option");
-        option.value = s;
-        option.textContent = s;
-        status.appendChild(option);
-      });
-    status.value = d.status;
-    status.addEventListener("change", () => updateStatus(d.id, status.value));
+    ["Lager","In Verwendung","Beschädigt","Wartung fällig"].forEach(s => {
+      const option = document.createElement("option");
+      option.value = s;
+      option.textContent = s;
+      status.appendChild(option);
+    });
+    status.value = d.status || "Lager";
+    status.addEventListener("change", () => updateDevice(d.id, {status:status.value}));
 
-    const remove = document.createElement("button");
-    remove.className = "delete";
-    remove.textContent = "Löschen";
-    remove.addEventListener("click", () => deleteDevice(d.id));
+    const personLabel = document.createElement("label");
+    personLabel.textContent = "Mitarbeiter zuweisen – ohne PIN";
 
-    card.append(name, details, status, remove);
+    const personSelect = document.createElement("select");
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = "Niemand / zurückgeben";
+    personSelect.appendChild(empty);
+
+    people.forEach(p => {
+      const option = document.createElement("option");
+      option.value = p.id;
+      option.textContent = p.name;
+      personSelect.appendChild(option);
+    });
+
+    personSelect.value = d.assigned_person_id || "";
+    personSelect.addEventListener("change", () =>
+      updateDevice(d.id, {
+        assigned_person_id: personSelect.value || null
+      })
+    );
+
+    const qr = document.createElement("img");
+    qr.className = "qr";
+    qr.alt = "QR-Code für " + d.device_name;
+
+    const qrUrl = location.origin + location.pathname +
+      "?device=" + encodeURIComponent(d.id);
+
+    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" +
+      encodeURIComponent(qrUrl);
+
+    const qrLink = document.createElement("a");
+    qrLink.href = qr.src;
+    qrLink.target = "_blank";
+    qrLink.textContent = "QR-Code öffnen / drucken";
+
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    actions.append(
+      makeButton("Stammdaten bearbeiten","light",() => editDevice(d)),
+      makeButton("Gerät löschen","danger",() => removeDevice(d.id))
+    );
+
+    card.append(
+      title, detail, assigned, statusLabel, status,
+      personLabel, personSelect, qr, qrLink, actions
+    );
     container.appendChild(card);
   });
 }
 
-async function updateStatus(id, status) {
+async function updateDevice(id, values) {
   const { error } = await db.from("devices")
-    .update({ status }).eq("id", id);
-  if (error) showMessage(error.message);
-  else {
-    showMessage("Status gespeichert.");
-    await loadDevices();
-  }
-}
+    .update(values)
+    .eq("id",id)
+    .eq("company_id",companyId);
 
-async function deleteDevice(id) {
-  if (!confirm("Gerät wirklich löschen?")) return;
-  const { error } = await db.from("devices").delete().eq("id", id);
-  if (error) showMessage(error.message);
-  else {
-    showMessage("Gerät gelöscht.");
-    await loadDevices();
-  }
-}
-
-document.getElementById("loginForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  showMessage("Anmeldung läuft...");
-  const { error } = await db.auth.signInWithPassword({
-    email: document.getElementById("email").value,
-    password: document.getElementById("password").value
-  });
-  if (error) showMessage("Anmeldung fehlgeschlagen: " + error.message);
-});
-
-document.getElementById("logout").addEventListener("click", async () => {
-  await db.auth.signOut();
-});
-
-document.getElementById("deviceForm").addEventListener("submit", async e => {
-  e.preventDefault();
-
-  const { data: { user } } = await db.auth.getUser();
-  if (!user) {
-    showMessage("Bitte zuerst anmelden.");
+  if (error) {
+    message("Änderung fehlgeschlagen: " + error.message);
+    await loadAll();
     return;
   }
 
-  const device = {
-    user_id: user.id,
-    device_name: document.getElementById("deviceName").value.trim(),
-    device_number: "GP-" + Date.now(),
-    manufacturer: document.getElementById("manufacturer").value.trim(),
-    model: document.getElementById("model").value.trim(),
-    location: document.getElementById("location").value.trim(),
-    assigned_to: document.getElementById("assigned").value.trim(),
-    status: document.getElementById("status").value
-  };
+  message("Änderung gespeichert.");
+  await loadAll();
+}
 
-  const { error } = await db.from("devices").insert(device);
+async function editDevice(d) {
+  const pin = await askPin();
+  if (pin === null) return;
+
+  const ok = await verifyPin(pin);
+  if (!ok) return;
+
+  const name = prompt("Gerätename:",d.device_name);
+  if (name === null) return;
+
+  const manufacturer = prompt("Hersteller:",d.manufacturer || "");
+  if (manufacturer === null) return;
+
+  const model = prompt("Modell:",d.model || "");
+  if (model === null) return;
+
+  const locationValue = prompt("Standort:",d.location || "");
+  if (locationValue === null) return;
+
+  const notesValue = prompt("Notizen:",d.notes || "");
+  if (notesValue === null) return;
+
+  const {data,error} = await db.rpc("update_device_master",{
+    p_pin:pin,
+    p_id:d.id,
+    p_device_name:name.trim(),
+    p_manufacturer:manufacturer.trim(),
+    p_model:model.trim(),
+    p_location:locationValue.trim(),
+    p_notes:notesValue.trim()
+  });
 
   if (error) {
-    showMessage("Speichern fehlgeschlagen: " + error.message);
+    message("Bearbeiten fehlgeschlagen: " + error.message);
+  } else if (!data) {
+    message("Änderung nicht möglich. PIN prüfen.");
+  } else {
+    message("Gerätedaten gespeichert.");
+    await loadAll();
+  }
+}
+
+async function removeDevice(id) {
+  if (!confirm("Gerät wirklich endgültig löschen?")) return;
+
+  const result = await adminAction("delete_device",{p_id:id});
+  if (result === null) return;
+
+  message("Gerät gelöscht.");
+  await loadAll();
+}
+
+function renderPeople() {
+  const container = $("peopleList");
+  container.replaceChildren();
+
+  if (!people.length) {
+    container.textContent = "Noch keine Personen angelegt.";
+    return;
+  }
+
+  people.forEach(p => {
+    const card = makeCard(p.name,"Mitarbeiter");
+    card.append(
+      makeButton("Bearbeiten","light",() => editPerson(p)),
+      makeButton("Löschen","danger",() => removePerson(p.id))
+    );
+    container.appendChild(card);
+  });
+}
+
+async function editPerson(p) {
+  const pin = await askPin();
+  if (pin === null) return;
+
+  const ok = await verifyPin(pin);
+  if (!ok) return;
+
+  const name = prompt("Neuer Name:",p.name);
+  if (name === null) return;
+
+  const {data,error} = await db.rpc("update_person",{
+    p_pin:pin,
+    p_id:p.id,
+    p_name:name.trim()
+  });
+
+  if (error) message("Fehler: " + error.message);
+  else if (!data) message("Bearbeitung nicht möglich. PIN prüfen.");
+  else {
+    message("Person geändert.");
+    await loadAll();
+  }
+}
+
+async function removePerson(id) {
+  if (!confirm("Person wirklich löschen? Zugewiesene Geräte werden freigegeben.")) return;
+
+  const result = await adminAction("delete_person",{p_id:id});
+  if (result === null) return;
+
+  message("Person gelöscht.");
+  await loadAll();
+}
+
+function updateDeviceDropdowns() {
+  ["maintenanceDevice","damageDevice"].forEach(id => {
+    const select = $(id);
+    const previous = select.value;
+    select.replaceChildren();
+
+    const first = document.createElement("option");
+    first.value = "";
+    first.textContent = "Gerät auswählen";
+    select.appendChild(first);
+
+    devices.forEach(d => {
+      const option = document.createElement("option");
+      option.value = d.id;
+      option.textContent = d.device_name;
+      select.appendChild(option);
+    });
+
+    if (devices.some(d => String(d.id) === previous)) {
+      select.value = previous;
+    }
+  });
+}
+
+function renderMaintenance() {
+  const container = $("maintenanceList");
+  container.replaceChildren();
+
+  if (!maintenanceItems.length) {
+    container.textContent = "Noch keine Wartung eingetragen.";
+    return;
+  }
+
+  maintenanceItems.forEach(item => {
+    const device = devices.find(d => d.id === item.device_id);
+    const card = makeCard(
+      device?.device_name || "Gerät",
+      item.description + (item.due_date ? " · Fällig: " + item.due_date : "")
+    );
+
+    const state = document.createElement("p");
+    state.textContent = item.completed ? "Erledigt" : "Offen";
+    card.appendChild(state);
+
+    if (!item.completed) {
+      card.appendChild(makeButton("Als erledigt markieren","light",() => completeMaintenance(item.id)));
+    }
+    container.appendChild(card);
+  });
+}
+
+async function completeMaintenance(id) {
+  const {error} = await db.from("maintenance")
+    .update({completed:true})
+    .eq("id",id)
+    .eq("company_id",companyId);
+
+  if (error) message("Fehler: " + error.message);
+  else {
+    message("Wartung als erledigt markiert.");
+    await loadAll();
+  }
+}
+
+function renderDamage() {
+  const container = $("damageList");
+  container.replaceChildren();
+
+  if (!damageItems.length) {
+    container.textContent = "Noch keine Schäden gemeldet.";
+    return;
+  }
+
+  damageItems.forEach(item => {
+    const device = devices.find(d => d.id === item.device_id);
+    container.appendChild(makeCard(
+      device?.device_name || "Gerät",
+      item.description + " · " + new Date(item.created_at).toLocaleString("de-AT")
+    ));
+  });
+}
+
+/* NAVIGATION */
+document.querySelectorAll("[data-page]").forEach(button => {
+  button.addEventListener("click",() => {
+    document.querySelectorAll("[data-page]").forEach(b => b.classList.remove("selected"));
+    button.classList.add("selected");
+
+    document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+    $("page-" + button.dataset.page).classList.remove("hidden");
+
+    const titles = {
+      dashboard:"Dashboard",
+      devices:"Geräte",
+      people:"Personen",
+      add:"Hinzufügen",
+      maintenance:"Wartung",
+      damage:"Schäden"
+    };
+    $("companyHeading").textContent = titles[button.dataset.page];
+  });
+});
+
+/* LOGIN */
+$("loginForm").addEventListener("submit",async e => {
+  e.preventDefault();
+  message("Anmeldung läuft...");
+
+  const {error} = await db.auth.signInWithPassword({
+    email:$("email").value.trim(),
+    password:$("password").value
+  });
+
+  if (error) message("Anmeldung fehlgeschlagen: " + error.message);
+});
+
+$("registerForm").addEventListener("submit",async e => {
+  e.preventDefault();
+  message("Konto wird erstellt...");
+
+  const {data,error} = await db.auth.signUp({
+    email:$("regEmail").value.trim(),
+    password:$("regPassword").value
+  });
+
+  if (error) {
+    message("Registrierung fehlgeschlagen: " + error.message);
+    return;
+  }
+
+  if (data.session) {
+    await initialiseUser(data.user);
+  } else {
+    message("Konto erstellt. Falls eine E-Mail-Bestätigung verlangt wird, bestätige zuerst deine E-Mail und melde dich danach an.");
+  }
+});
+
+/* FIRMA EINRICHTEN */
+$("setupForm").addEventListener("submit",async e => {
+  e.preventDefault();
+
+  const pin = $("adminPinSetup").value;
+  if (!/^[0-9]{4}$/.test(pin)) {
+    message("Bitte einen vierstelligen PIN eingeben.");
+    return;
+  }
+
+  const {data,error} = await db.rpc("setup_company",{
+    p_company_name:$("companyName").value.trim(),
+    p_admin_pin:pin
+  });
+
+  if (error) {
+    message("Firma konnte nicht eingerichtet werden: " + error.message);
+    return;
+  }
+
+  message("Firma erfolgreich eingerichtet.");
+  await initialiseUser(currentUser);
+});
+
+/* GERÄT ANLEGEN */
+$("deviceForm").addEventListener("submit",async e => {
+  e.preventDefault();
+
+  const pin = await askPin();
+  if (pin === null) return;
+
+  const {data,error} = await db.rpc("create_device",{
+    p_pin:pin,
+    p_device_name:$("deviceName").value.trim(),
+    p_device_number:"GP-" + Date.now(),
+    p_manufacturer:$("manufacturer").value.trim() || null,
+    p_model:$("model").value.trim() || null,
+    p_location:$("location").value.trim() || null,
+    p_purchase_date:$("purchaseDate").value || null,
+    p_notes:$("notes").value.trim() || null
+  });
+
+  if (error) {
+    message("Gerät konnte nicht gespeichert werden: " + error.message);
+    return;
+  }
+
+  if (!data) {
+    message("Gerät nicht gespeichert. PIN prüfen.");
     return;
   }
 
   e.target.reset();
-  showMessage("Gerät erfolgreich gespeichert.");
-  await loadDevices();
+  message("Gerät erfolgreich angelegt.");
+  await loadAll();
 });
 
-document.getElementById("search").addEventListener("input", render);
+/* PERSON ANLEGEN */
+$("personForm").addEventListener("submit",async e => {
+  e.preventDefault();
 
-db.auth.onAuthStateChange(async (event, session) => {
-  showApp(session?.user);
-  if (session?.user) await loadDevices();
+  const result = await adminAction("create_person",{
+    p_name:$("personName").value.trim()
+  });
+
+  if (result === null) return;
+
+  e.target.reset();
+  message("Person erfolgreich angelegt.");
+  await loadAll();
 });
 
-const { data: { session } } = await db.auth.getSession();
-showApp(session?.user);
-if (session?.user) await loadDevices();
+/* WARTUNG */
+$("maintenanceForm").addEventListener("submit",async e => {
+  e.preventDefault();
+
+  const deviceId = $("maintenanceDevice").value;
+  if (!deviceId) {
+    message("Bitte ein Gerät auswählen.");
+    return;
+  }
+
+  const {error} = await db.from("maintenance").insert({
+    company_id:companyId,
+    device_id:Number(deviceId),
+    description:$("maintenanceDescription").value.trim(),
+    due_date:$("maintenanceDate").value || null
+  });
+
+  if (error) {
+    message("Wartung konnte nicht eingetragen werden: " + error.message);
+    return;
+  }
+
+  e.target.reset();
+  message("Wartung eingetragen.");
+  await loadAll();
+});
+
+/* SCHADEN MELDEN */
+$("damageForm").addEventListener("submit",async e => {
+  e.preventDefault();
+
+  const deviceId = $("damageDevice").value;
+  if (!deviceId) {
+    message("Bitte ein Gerät auswählen.");
+    return;
+  }
+
+  const {error} = await db.from("damage_reports").insert({
+    company_id:companyId,
+    device_id:Number(deviceId),
+    reported_by:currentUser.id,
+    description:$("damageDescription").value.trim()
+  });
+
+  if (error) {
+    message("Schaden konnte nicht gemeldet werden: " + error.message);
+    return;
+  }
+
+  e.target.reset();
+  message("Schaden erfolgreich gemeldet.");
+  await loadAll();
+});
+
+/* SUCHE */
+$("deviceSearch").addEventListener("input",renderDevices);
+
+/* ABMELDEN */
+$("logout").addEventListener("click",async () => {
+  await db.auth.signOut();
+});
+
+/* AUTH-STATUS */
+db.auth.onAuthStateChange((event,session) => {
+  if (event === "SIGNED_OUT") {
+    currentUser = null;
+    companyId = null;
+    showSection("authSection");
+  }
+});
+
+/* START */
+const {data:{session}} = await db.auth.getSession();
+await initialiseUser(session?.user || null);
+
+/* QR-LINK: Gerät nach dem Öffnen hervorheben */
+const params = new URLSearchParams(location.search);
+const requestedDevice = params.get("device");
+
+if (requestedDevice && session?.user) {
+  setTimeout(() => {
+    const target = devices.find(d => String(d.id) === requestedDevice);
+    if (target) {
+      document.querySelector('[data-page="devices"]').click();
+      message("QR-Code geöffnet: " + target.device_name);
+    }
+  },500);
+}
 </script>
 </body>
 </html>
