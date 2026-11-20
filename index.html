@@ -55,7 +55,6 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 .photo-buttons{display:flex;gap:8px;flex-wrap:wrap;margin:5px 0 10px}
 .photo-buttons button{flex:1;min-width:140px}
 .name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.name-row button{margin:0}
 @media(min-width:700px){
  .menu{grid-template-columns:repeat(2,minmax(0,1fr))}
  .filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -190,17 +189,19 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 <section id="page-admin" class="page hidden">
 <div class="page-title"><button class="light" data-home>‹ Dashboard</button><h2>Administration</h2></div>
 <p class="muted">Dieser Bereich ist mit dem Admin-PIN freigeschaltet. Stammdatenänderungen werden zusätzlich serverseitig geprüft.</p>
-
 <div class="admin-tiles">
 <button class="admin-tile" data-admin-tab="device"><span>🧰</span>Gerät hinzufügen</button>
 <button class="admin-tile" data-admin-tab="vehicle"><span>🚗</span>Fahrzeug hinzufügen</button>
 <button class="admin-tile" data-admin-tab="people"><span>👥</span>Mitarbeiter verwalten</button>
 <button class="admin-tile" data-admin-tab="damage"><span>🛠️</span>Gemeldete Schäden</button>
+<button class="admin-tile" data-admin-tab="security"><span>🔐</span>Sicherheit & Konto</button>
 </div>
 
 <div id="admin-device" class="admin-content hidden">
 <div class="card"><h3>Gerät anlegen</h3><form id="deviceForm">
 <label>Gerätename *</label><input id="deviceName" required placeholder="z. B. Akkuschrauber">
+<label>Seriennummer (optional)</label><input id="deviceSerialNumber" placeholder="Hersteller-Seriennummer">
+<p class="form-note">Wenn keine Seriennummer eingetragen wird, erhält das Gerät automatisch eine GerätePass-Nummer wie GP-001.</p>
 <label>Geräteart</label><input id="deviceType" placeholder="z. B. Werkzeug, Funkgerät, Maschine">
 <label>Hersteller</label><input id="manufacturer"><label>Modell</label><input id="model">
 <label>Standort</label><input id="location"><label>Kaufdatum</label><input id="purchaseDate" type="date">
@@ -228,6 +229,19 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 
 <div id="admin-damage" class="admin-content hidden">
 <div class="card"><h3>Gemeldete Schäden</h3><p class="muted">Nur offene Schadensmeldungen. Hier kannst du Reparaturen abschließen.</p><div id="adminDamageList"></div></div>
+</div>
+
+<div id="admin-security" class="admin-content hidden">
+<div class="card">
+<h3>Admin-PIN ändern</h3>
+<p class="muted">Der neue PIN muss aus genau vier Ziffern bestehen.</p>
+<button id="changePinButton">Admin-PIN ändern</button>
+</div>
+<div class="card">
+<h3>Firma und alle Daten löschen</h3>
+<p class="muted">Löscht unwiderruflich Geräte, Fahrzeuge, Mitarbeiter, Schadensmeldungen, Fotos und das Firmenkonto samt Login.</p>
+<button id="deleteCompanyButton" class="danger">Firma endgültig löschen</button>
+</div>
 </div>
 </section>
 </section>
@@ -261,7 +275,6 @@ let currentUser=null,companyId=null,companyName="";
 let devices=[],people=[],vehicles=[],maintenanceItems=[],damageItems=[];
 let adminPin=null,initialising=false,activeUserId=null;
 let activeDeviceStatus="In Verwendung",activeVehicleStatus="In Verwendung";
-let myPersonId=localStorage.getItem("geraetepass_person_"+(companyId||""))||"";
 
 const DEVICE_STATUSES=["In Verwendung","Lager","Wartung fällig","Beschädigt","In Werkstatt / Abgegeben"];
 const VEHICLE_STATUSES=["In Verwendung","Verfügbar","Wartung fällig","Beschädigt","In Werkstatt / Abgegeben"];
@@ -302,42 +315,32 @@ function isDue(date){
  const due=new Date(date+"T23:59:59");
  if(Number.isNaN(due.getTime()))return false;
  const today=new Date();today.setHours(0,0,0,0);
- const days=(due.getTime()-today.getTime())/86400000;
- return days<=30;
+ return (due.getTime()-today.getTime())/86400000<=30;
 }
-function isProtectedStatus(status){
- return status==="Beschädigt"||status==="In Werkstatt / Abgegeben";
-}
+function isProtectedStatus(status){return status==="Beschädigt"||status==="In Werkstatt / Abgegeben";}
 function personStorageKey(){return "geraetepass_person_"+companyId;}
 function savedPerson(){
  const id=localStorage.getItem(personStorageKey())||"";
  return people.find(p=>String(p.id)===String(id))||null;
 }
 function updateMyNameButton(){
- const p=savedPerson();
- $("myNameButton").textContent=p?"👤 "+p.name:"👤 Mein Name";
+ const p=savedPerson();$("myNameButton").textContent=p?"👤 "+p.name:"👤 Mein Name";
 }
 function openNamePicker(force=false){
  const el=$("myNameSelect");el.replaceChildren(new Option("Mitarbeiter auswählen",""));
  people.forEach(p=>el.add(new Option(p.name,p.id)));
  const current=localStorage.getItem(personStorageKey())||"";
  el.value=people.some(p=>String(p.id)===current)?current:"";
- $("nameModal").classList.remove("hidden");
- $("cancelMyName").classList.toggle("hidden",force);
+ $("nameModal").classList.remove("hidden");$("cancelMyName").classList.toggle("hidden",force);
 }
 function closeNamePicker(){$("nameModal").classList.add("hidden");}
-function ensureMyName(){
- updateMyNameButton();
- if(people.length&&!savedPerson())openNamePicker(true);
-}
+function ensureMyName(){updateMyNameButton();if(people.length&&!savedPerson())openNamePicker(true);}
 async function saveMyName(){
  const id=$("myNameSelect").value;
  if(!id){message("Bitte einen Mitarbeiter auswählen.");return;}
  if(!people.some(p=>String(p.id)===id)){message("Dieser Mitarbeiter ist nicht mehr vorhanden.");return;}
- localStorage.setItem(personStorageKey(),id);
- myPersonId=id;updateMyNameButton();closeNamePicker();
- message("Dein Name wurde auf diesem Handy gespeichert.");
- renderDevices();renderVehicles();
+ localStorage.setItem(personStorageKey(),id);updateMyNameButton();closeNamePicker();
+ message("Dein Name wurde auf diesem Handy gespeichert.");renderDevices();renderVehicles();
 }
 
 async function syncUser(user){
@@ -354,26 +357,18 @@ async function syncUser(user){
   const {data:company,error:companyError}=await db.from("companies").select("id,name").eq("id",companyId).single();
   if(companyError){message("Firma konnte nicht geladen werden: "+companyError.message);return;}
   companyName=company.name;$("companyLabel").textContent=companyName;
-  showSection("appSection");navigate("dashboard");await loadAll();
-  ensureMyName();
+  showSection("appSection");navigate("dashboard");await loadAll();ensureMyName();
  }finally{initialising=false;}
 }
 
 async function applyDueStatuses(){
  const updates=[];
- for(const d of devices){
-  if(isDue(d.maintenance_due)&&!isProtectedStatus(d.status)&&d.status!=="Wartung fällig"){
-   updates.push({table:"devices",item:d,status:"Wartung fällig"});
-  }
- }
- for(const v of vehicles){
-  if(isDue(v.inspection_due)&&!isProtectedStatus(v.status)&&v.status!=="Wartung fällig"){
-   updates.push({table:"vehicles",item:v,status:"Wartung fällig"});
-  }
- }
+ for(const d of devices)if(isDue(d.maintenance_due)&&!isProtectedStatus(d.status)&&d.status!=="Wartung fällig")updates.push({table:"devices",item:d});
+ for(const v of vehicles)if(isDue(v.inspection_due)&&!isProtectedStatus(v.status)&&v.status!=="Wartung fällig")updates.push({table:"vehicles",item:v});
  for(const u of updates){
-  const {error}=await db.from(u.table).update({status:u.status,assigned_person_id:null}).eq("id",u.item.id).eq("company_id",companyId);
-  if(!error){u.item.status=u.status;u.item.assigned_person_id=null;}
+  // Nur Status ändern. Die Mitarbeiterzuweisung bleibt erhalten.
+  const {error}=await db.from(u.table).update({status:"Wartung fällig"}).eq("id",u.item.id).eq("company_id",companyId);
+  if(!error)u.item.status="Wartung fällig";
   else message("Prüffrist-Status konnte nicht automatisch aktualisiert werden: "+error.message);
  }
 }
@@ -387,9 +382,7 @@ async function loadAll(){
   db.from("vehicles").select("*").eq("company_id",companyId).order("created_at",{ascending:false})
  ]);
  const labels=["Geräte","Personen","Wartung","Fahrzeuge"];
- for(let i=0;i<results.length;i++){
-  if(results[i].error){message(labels[i]+" konnten nicht geladen werden: "+results[i].error.message);return;}
- }
+ for(let i=0;i<results.length;i++)if(results[i].error){message(labels[i]+" konnten nicht geladen werden: "+results[i].error.message);return;}
  [devices,people,maintenanceItems,vehicles]=results.map(r=>r.data||[]);
  await applyDueStatuses();
  if(adminPin){
@@ -397,8 +390,7 @@ async function loadAll(){
   if(error){damageItems=[];message("Gemeldete Schäden konnten nicht geladen werden: "+error.message);}
   else damageItems=data||[];
  }else damageItems=[];
- renderAll();
- if(companyId)updateMyNameButton();
+ renderAll();updateMyNameButton();
 }
 
 function btn(text,cls,fn){
@@ -412,8 +404,7 @@ function card(title,detail){
 }
 function renderAll(){
  renderDashboard();renderDevices();renderVehicles();renderPeople();renderMaintenance();
- if(adminPin)renderDamage();
- updateDropdowns();updateFilters();updateMyNameButton();
+ if(adminPin)renderDamage();updateDropdowns();updateFilters();updateMyNameButton();
 }
 function renderDashboard(){
  $("dashDevices").textContent=devices.length+" Geräte";
@@ -421,126 +412,138 @@ function renderDashboard(){
 }
 function renderStatusTiles(){
  const count=(items,status,vehicle=false)=>items.filter(x=>vehicle&&status==="Verfügbar"?(x.status==="Verfügbar"||x.status==="Lager"):x.status===status).length;
- const deviceCounts=[
-  ["deviceCountUse","In Verwendung"],["deviceCountStock","Lager"],
-  ["deviceCountMaint","Wartung fällig"],["deviceCountDamage","Beschädigt"],
-  ["deviceCountWorkshop","In Werkstatt / Abgegeben"]
- ];
- const vehicleCounts=[
-  ["vehicleCountUse","In Verwendung"],["vehicleCountStock","Verfügbar"],
-  ["vehicleCountMaint","Wartung fällig"],["vehicleCountDamage","Beschädigt"],
-  ["vehicleCountWorkshop","In Werkstatt / Abgegeben"]
- ];
- deviceCounts.forEach(([id,s])=>$(id).textContent=count(devices,s)+" Geräte");
- vehicleCounts.forEach(([id,s])=>$(id).textContent=count(vehicles,s,true)+" Fahrzeuge");
+ [["deviceCountUse","In Verwendung"],["deviceCountStock","Lager"],["deviceCountMaint","Wartung fällig"],["deviceCountDamage","Beschädigt"],["deviceCountWorkshop","In Werkstatt / Abgegeben"]].forEach(([id,s])=>$(id).textContent=count(devices,s)+" Geräte");
+ [["vehicleCountUse","In Verwendung"],["vehicleCountStock","Verfügbar"],["vehicleCountMaint","Wartung fällig"],["vehicleCountDamage","Beschädigt"],["vehicleCountWorkshop","In Werkstatt / Abgegeben"]].forEach(([id,s])=>$(id).textContent=count(vehicles,s,true)+" Fahrzeuge");
  document.querySelectorAll("[data-device-status]").forEach(b=>b.classList.toggle("active",b.dataset.deviceStatus===activeDeviceStatus));
  document.querySelectorAll("[data-vehicle-status]").forEach(b=>b.classList.toggle("active",b.dataset.vehicleStatus===activeVehicleStatus));
 }
-
 function updateFilters(){
  [["devicePersonFilter","Alle Mitarbeiter"],["vehiclePersonFilter","Alle Fahrer"]].forEach(([id,label])=>{
-  const el=$(id),v=el.value;el.replaceChildren(new Option(label,""));
-  people.forEach(p=>el.add(new Option(p.name,p.id)));el.value=v;
+  const el=$(id),v=el.value;el.replaceChildren(new Option(label,""));people.forEach(p=>el.add(new Option(p.name,p.id)));el.value=v;
  });
  [["deviceTypeFilter","Alle Gerätearten",devices.map(d=>d.device_type)],["vehicleTypeFilter","Alle Fahrzeugarten",vehicles.map(v=>v.vehicle_type)]].forEach(([id,label,vals])=>{
-  const el=$(id),v=el.value;el.replaceChildren(new Option(label,""));
-  [...new Set(vals.filter(Boolean))].sort().forEach(x=>el.add(new Option(x,x)));el.value=v;
+  const el=$(id),v=el.value;el.replaceChildren(new Option(label,""));[...new Set(vals.filter(Boolean))].sort().forEach(x=>el.add(new Option(x,x)));el.value=v;
  });
 }
 
 async function changeAssignment(table,id,personId){
- const values={assigned_person_id:personId||null};
- const {error}=await db.from(table).update(values).eq("id",id).eq("company_id",companyId);
+ const {error}=await db.from(table).update({assigned_person_id:personId||null}).eq("id",id).eq("company_id",companyId);
  if(error){message("Zuweisung fehlgeschlagen: "+error.message);await loadAll();return;}
  await loadAll();
 }
+
 async function changeStatus(table,id,newStatus,isVehicle=false){
  const stock=isVehicle?"Verfügbar":"Lager";
- if(newStatus==="Beschädigt"){
-  message("Beschädigt kann nur über eine Schadensmeldung gesetzt werden.");await loadAll();return;
- }
+ const items=isVehicle?vehicles:devices;
+ const current=items.find(x=>String(x.id)===String(id));
+ if(!current)return;
+ if(newStatus==="Beschädigt"){message("Beschädigt kann nur über eine Schadensmeldung gesetzt werden.");await loadAll();return;}
+
  let assigned=null;
  if(newStatus==="In Verwendung"){
-  const current=(isVehicle?vehicles:devices).find(x=>String(x.id)===String(id));
-  const saved=savedPerson();
-  assigned=saved?.id||current?.assigned_person_id||null;
-  if(!assigned){
-   message("Bitte zuerst unter „Mein Name“ einen Mitarbeiter auswählen oder im Mitarbeiterfeld zuweisen.");
-   await loadAll();return;
-  }
- }else if([stock,"In Werkstatt / Abgegeben","Wartung fällig"].includes(newStatus)){
-  assigned=null;
+  assigned=savedPerson()?.id||current.assigned_person_id||null;
+  if(!assigned){message("Bitte zuerst unter „Mein Name“ einen Mitarbeiter auswählen oder im Mitarbeiterfeld zuweisen.");await loadAll();return;}
  }
+
+ // Sonderablauf bei Rückkehr aus Werkstatt / Abgegeben
+ if(current.status==="In Werkstatt / Abgegeben"&&(newStatus===stock||newStatus==="In Verwendung")){
+  if(isVehicle){
+   const mileageText=prompt("Neuer Kilometerstand (optional):",current.mileage??"");
+   if(mileageText===null)return;
+   const mileage=mileageText.trim()===""?null:Number(mileageText);
+   if(mileage!==null&&(!Number.isInteger(mileage)||mileage<0)){message("Bitte einen gültigen Kilometerstand eingeben.");return;}
+   const inspection=prompt("Pickerl gültig bis – neues Datum (YYYY-MM-DD):",current.inspection_due||"");
+   if(inspection===null)return;
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(inspection)){message("Bitte ein gültiges Datum im Format YYYY-MM-DD eingeben.");return;}
+   const {data,error}=await db.rpc("return_vehicle_from_workshop",{
+    p_id:bigintId(id,"Fahrzeug-ID"),p_new_status:newStatus,p_mileage:mileage,
+    p_inspection_due:inspection,p_assigned_person_id:assigned
+   });
+   if(error||data!==true){message("Fahrzeug konnte nicht zurückgenommen werden: "+(error?.message||"Rückgabe nicht möglich."));return;}
+  }else{
+   const due=prompt("Nächste Prüfung / Wartung bis – neues Datum (YYYY-MM-DD):",current.maintenance_due||"");
+   if(due===null)return;
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(due)){message("Bitte ein gültiges Datum im Format YYYY-MM-DD eingeben.");return;}
+   const {data,error}=await db.rpc("return_device_from_workshop",{
+    p_id:bigintId(id,"Geräte-ID"),p_new_status:newStatus,
+    p_maintenance_due:due,p_assigned_person_id:assigned
+   });
+   if(error||data!==true){message("Gerät konnte nicht zurückgenommen werden: "+(error?.message||"Rückgabe nicht möglich."));return;}
+  }
+  message("Rückgabe aus der Werkstatt gespeichert.");
+  if(isVehicle)activeVehicleStatus=newStatus;else activeDeviceStatus=newStatus;
+  await loadAll();return;
+ }
+
+ if([stock,"In Werkstatt / Abgegeben","Wartung fällig"].includes(newStatus))assigned=null;
  const {error}=await db.from(table).update({status:newStatus,assigned_person_id:assigned}).eq("id",id).eq("company_id",companyId);
  if(error){message("Statusänderung fehlgeschlagen: "+error.message);await loadAll();return;}
  message("Status gespeichert.");
  if(isVehicle)activeVehicleStatus=newStatus;else activeDeviceStatus=newStatus;
  await loadAll();
 }
+
 function renderDevices(){
  renderStatusTiles();const box=$("deviceList");box.replaceChildren();
  const q=$("deviceSearch").value.toLowerCase(),pf=$("devicePersonFilter").value,tf=$("deviceTypeFilter").value;
- let rows=devices.filter(d=>d.status===activeDeviceStatus&&[d.device_name,d.device_number,d.manufacturer,d.model,d.location,d.device_type].some(x=>String(x||"").toLowerCase().includes(q))&&(!pf||String(d.assigned_person_id)===pf)&&(!tf||d.device_type===tf));
+ let rows=devices.filter(d=>d.status===activeDeviceStatus&&[d.device_name,d.device_number,d.serial_number,d.manufacturer,d.model,d.location,d.device_type].some(x=>String(x||"").toLowerCase().includes(q))&&(!pf||String(d.assigned_person_id)===pf)&&(!tf||d.device_type===tf));
  const sort=$("deviceSort").value;
  rows.sort((a,b)=>sort==="name-desc"?(b.device_name||"").localeCompare(a.device_name||""):sort==="person"?personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id)):sort==="type"?(a.device_type||"").localeCompare(b.device_type||""):(a.device_name||"").localeCompare(b.device_name||""));
- if(!rows.length){box.append(Object.assign(document.createElement("div"),{className:"empty",textContent:"Keine Geräte in diesem Status gefunden."}));return;}
+ if(!rows.length){
+  const text=devices.length===0?"Noch keine Geräte angelegt. Lege das erste Gerät in der Administration an.":"Keine Geräte in diesem Bereich vorhanden.";
+  box.append(Object.assign(document.createElement("div"),{className:"empty",textContent:text}));return;
+ }
  rows.forEach(d=>{
   const c=document.createElement("div");c.className="card item-card "+statusClass(d.status);
   const h=document.createElement("h3");h.textContent=d.device_name||"Gerät";
-  const info=document.createElement("p");info.className="muted";info.textContent=[d.device_number,d.device_type,d.manufacturer,d.model,d.location].filter(Boolean).join(" · ");
+  const info=document.createElement("p");info.className="muted";
+  info.textContent=["GerätePass-Nr.: "+(d.device_number||"Nicht vergeben"),d.device_type,d.manufacturer,d.model,d.location].filter(Boolean).join(" · ");
+  const serial=document.createElement("p");serial.className="muted";serial.textContent="Hersteller-Seriennummer: "+(d.serial_number||"Nicht eingetragen");
   const due=document.createElement("p");due.className="muted";due.textContent="Nächste Prüfung / Wartung bis: "+(d.maintenance_due||"Nicht eingetragen");
-  const sl=document.createElement("label");sl.textContent="Status";
-  let st;
-  if(d.status==="Beschädigt") {st=document.createElement("p");st.className="tag";st.textContent="Beschädigt · Reparatur im Admin-Bereich abschließen";}
-  else {
-   st=document.createElement("select");
-   DEVICE_STATUSES.filter(x=>x!=="Beschädigt").forEach(x=>st.add(new Option(x,x)));
-   st.value=d.status||"Lager";
-   st.addEventListener("change",()=>changeStatus("devices",d.id,st.value,false));
+  const sl=document.createElement("label");sl.textContent="Status";let st;
+  if(d.status==="Beschädigt"){st=document.createElement("p");st.className="tag";st.textContent="Beschädigt · Reparatur im Admin-Bereich abschließen";}
+  else{
+   st=document.createElement("select");DEVICE_STATUSES.filter(x=>x!=="Beschädigt").forEach(x=>st.add(new Option(x,x)));
+   st.value=d.status||"Lager";st.addEventListener("change",()=>changeStatus("devices",d.id,st.value,false));
   }
   const pl=document.createElement("label");pl.textContent="Mitarbeiter zuweisen";
   const person=document.createElement("select");person.add(new Option("Niemand / zurückgeben",""));
-  people.forEach(x=>person.add(new Option(x.name,x.id)));
-  person.value=d.assigned_person_id||"";
+  people.forEach(x=>person.add(new Option(x.name,x.id)));person.value=d.assigned_person_id||"";
   person.addEventListener("change",()=>changeAssignment("devices",d.id,person.value));
   const actions=document.createElement("div");actions.className="actions";
   actions.append(btn("Schaden melden","light",()=>openDamageFor("device",d.id)),btn("QR-Code anzeigen","light",()=>showQr("device",d.id,d.device_name||"Gerät")));
   if(adminPin)actions.append(btn("Stammdaten bearbeiten","light",()=>editDevice(d)),btn("Gerät löschen","danger",()=>removeDevice(d.id)));
-  c.append(h,info,due,sl,st,pl,person,actions);box.append(c);
+  c.append(h,info,serial,due,sl,st,pl,person,actions);box.append(c);
  });
 }
 function selectDeviceStatus(status){activeDeviceStatus=status;renderDevices();}
 
-async function updateDevice(id,values){
- let deviceId;try{deviceId=bigintId(id,"Geräte-ID");}catch(err){message(err.message);return;}
- const {error}=await db.from("devices").update(values).eq("id",deviceId).eq("company_id",companyId);
- if(error){message("Geräteänderung fehlgeschlagen: "+error.message);await loadAll();return;}
- message("Änderung gespeichert.");await loadAll();
-}
 async function editDevice(d){
  const name=prompt("Gerätename:",d.device_name||"");if(name===null)return;
+ const serial=prompt("Hersteller-Seriennummer (leer lassen zum Entfernen):",d.serial_number||"");if(serial===null)return;
  const type=prompt("Geräteart:",d.device_type||"");if(type===null)return;
  const manufacturer=prompt("Hersteller:",d.manufacturer||"");if(manufacturer===null)return;
  const model=prompt("Modell:",d.model||"");if(model===null)return;
  const loc=prompt("Standort:",d.location||"");if(loc===null)return;
  const due=prompt("Nächste Prüfung / Wartung bis (YYYY-MM-DD):",d.maintenance_due||"");if(due===null)return;
+ if(due.trim()&&!/^\d{4}-\d{2}-\d{2}$/.test(due.trim())){message("Ungültiges Datum. Bitte YYYY-MM-DD verwenden.");return;}
  const notes=prompt("Notizen:",d.notes||"");if(notes===null)return;
  const pin=adminPin;if(!pin){message("Bitte zuerst Administration mit PIN öffnen.");return;}
- let id;try{id=bigintId(d.id,"Geräte-ID");}catch(err){message(err.message);return;}
+ const id=bigintId(d.id,"Geräte-ID");
  const {data,error}=await db.rpc("update_device_master",{p_pin:pin,p_id:id,p_device_name:name.trim(),p_manufacturer:manufacturer.trim(),p_model:model.trim(),p_location:loc.trim(),p_notes:notes.trim()});
- if(error){message("Gerät konnte nicht bearbeitet werden: "+error.message);return;}
- if(!data){message("Änderung nicht möglich. PIN prüfen.");return;}
- const {data:dueData,error:dueError}=await db.rpc("set_device_maintenance_due",{p_pin:pin,p_id:id,p_due_date:due.trim()||null});
- if(dueError||dueData!==true){message("Gerätedaten gespeichert, Prüfdatum aber nicht geändert: "+(dueError?.message||"Datenbankfunktion prüfen."));}
- else message("Gerätedaten gespeichert.");
- const {data:typeData,error:typeError}=await db.rpc("set_device_type_admin",{p_pin:pin,p_id:id,p_device_type:type.trim()});
- if(typeError||!typeData)message("Gerätedaten gespeichert, Geräteart aber nicht geändert: "+(typeError?.message||"PIN prüfen."));
+ if(error||data!==true){message("Gerät konnte nicht bearbeitet werden: "+(error?.message||"PIN prüfen."));return;}
+ const serialResult=await db.rpc("set_device_serial_number_admin",{p_pin:pin,p_id:id,p_serial_number:serial.trim()||null});
+ if(serialResult.error||serialResult.data!==true){message("Stammdaten gespeichert, Seriennummer aber nicht geändert: "+(serialResult.error?.message||"Datenbankfunktion prüfen."));}
+ const dueResult=await db.rpc("set_device_maintenance_due",{p_pin:pin,p_id:id,p_due_date:due.trim()||null});
+ if(dueResult.error||dueResult.data!==true){message("Gerätedaten gespeichert, Prüfdatum aber nicht geändert: "+(dueResult.error?.message||"Datenbankfunktion prüfen."));}
+ const typeResult=await db.rpc("set_device_type_admin",{p_pin:pin,p_id:id,p_device_type:type.trim()});
+ if(typeResult.error||!typeResult.data)message("Gerätedaten gespeichert, Geräteart aber nicht geändert: "+(typeResult.error?.message||"PIN prüfen."));
+ else message("Gerätedaten erfolgreich gespeichert.");
  await loadAll();
 }
 async function removeDevice(id){
  if(!confirm("Gerät wirklich endgültig löschen?"))return;
- let deviceId;try{deviceId=bigintId(id,"Geräte-ID");}catch(err){message(err.message);return;}
- const r=await adminAction("delete_device",{p_id:deviceId});if(r===null)return;
+ const r=await adminAction("delete_device",{p_id:bigintId(id,"Geräte-ID")});if(r===null)return;
  message("Gerät gelöscht.");await loadAll();
 }
 
@@ -550,7 +553,10 @@ function renderVehicles(){
  let rows=vehicles.filter(v=>(activeVehicleStatus==="Verfügbar"?(v.status==="Verfügbar"||v.status==="Lager"):v.status===activeVehicleStatus)&&[v.vehicle_name,v.registration_number,v.vehicle_type,v.manufacturer,v.model,v.notes].some(x=>String(x||"").toLowerCase().includes(q))&&(!pf||String(v.assigned_person_id)===pf)&&(!tf||v.vehicle_type===tf));
  const sort=$("vehicleSort").value;
  rows.sort((a,b)=>sort==="registration"?(a.registration_number||"").localeCompare(b.registration_number||""):sort==="person"?personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id)):sort==="type"?(a.vehicle_type||"").localeCompare(b.vehicle_type||""):(a.vehicle_name||"").localeCompare(b.vehicle_name||""));
- if(!rows.length){box.append(Object.assign(document.createElement("div"),{className:"empty",textContent:"Keine Fahrzeuge in diesem Status gefunden."}));return;}
+ if(!rows.length){
+  const text=vehicles.length===0?"Noch keine Fahrzeuge angelegt. Lege das erste Fahrzeug in der Administration an.":"Keine Fahrzeuge in diesem Bereich vorhanden.";
+  box.append(Object.assign(document.createElement("div"),{className:"empty",textContent:text}));return;
+ }
  rows.forEach(v=>{
   const c=document.createElement("div");c.className="card item-card "+statusClass(v.status);
   const h=document.createElement("h3");h.textContent=v.vehicle_name||"Fahrzeug";
@@ -577,12 +583,6 @@ function renderVehicles(){
 }
 function selectVehicleStatus(status){activeVehicleStatus=status;renderVehicles();}
 
-async function updateVehicle(id,values){
- let vehicleId;try{vehicleId=bigintId(id,"Fahrzeug-ID");}catch(err){message(err.message);return;}
- const {error}=await db.from("vehicles").update(values).eq("id",vehicleId).eq("company_id",companyId);
- if(error){message("Fahrzeugänderung fehlgeschlagen: "+error.message);await loadAll();return;}
- message("Fahrzeugänderung gespeichert.");await loadAll();
-}
 async function editVehicle(v){
  const name=prompt("Fahrzeugname:",v.vehicle_name||"");if(name===null)return;
  const registration=prompt("Kennzeichen:",v.registration_number||"");if(registration===null)return;
@@ -591,19 +591,18 @@ async function editVehicle(v){
  const model=prompt("Modell:",v.model||"");if(model===null)return;
  const mileageText=prompt("Kilometerstand:",v.mileage??"");if(mileageText===null)return;
  const inspection=prompt("Pickerl gültig bis (YYYY-MM-DD):",v.inspection_due||"");if(inspection===null)return;
+ if(inspection.trim()&&!/^\d{4}-\d{2}-\d{2}$/.test(inspection.trim())){message("Ungültiges Datum. Bitte YYYY-MM-DD verwenden.");return;}
  const notes=prompt("Notizen:",v.notes||"");if(notes===null)return;
  const mileage=mileageText.trim()===""?null:Number(mileageText);
  if(mileage!==null&&(!Number.isInteger(mileage)||mileage<0)){message("Ungültiger Kilometerstand.");return;}
- let vehicleId;try{vehicleId=bigintId(v.id,"Fahrzeug-ID");}catch(err){message(err.message);return;}
+ const vehicleId=bigintId(v.id,"Fahrzeug-ID");
  const {data,error}=await db.rpc("update_vehicle_master",{p_pin:adminPin,p_id:vehicleId,p_vehicle_name:name.trim(),p_registration_number:registration.trim(),p_vehicle_type:type.trim(),p_manufacturer:manufacturer.trim(),p_model:model.trim(),p_mileage:mileage,p_inspection_due:inspection.trim()||null,p_notes:notes.trim()});
- if(error){message("Fahrzeug konnte nicht bearbeitet werden: "+error.message);return;}
- if(!data){message("Änderung nicht möglich. PIN prüfen.");return;}
+ if(error||data!==true){message("Fahrzeug konnte nicht bearbeitet werden: "+(error?.message||"PIN prüfen."));return;}
  message("Fahrzeugdaten gespeichert.");await loadAll();
 }
 async function removeVehicle(id){
  if(!confirm("Fahrzeug wirklich endgültig löschen?"))return;
- let vehicleId;try{vehicleId=bigintId(id,"Fahrzeug-ID");}catch(err){message(err.message);return;}
- const r=await adminAction("delete_vehicle",{p_id:vehicleId});if(r===null)return;
+ const r=await adminAction("delete_vehicle",{p_id:bigintId(id,"Fahrzeug-ID")});if(r===null)return;
  message("Fahrzeug gelöscht.");await loadAll();
 }
 
@@ -612,8 +611,7 @@ function renderPeople(){
  if(!people.length){box.textContent="Noch keine Personen angelegt.";return;}
  people.forEach(p=>{
   const c=card(p.name,"Mitarbeiter");
-  c.append(btn("Bearbeiten","light",()=>editPerson(p)),btn("Löschen","danger",()=>removePerson(p.id)));
-  box.append(c);
+  c.append(btn("Bearbeiten","light",()=>editPerson(p)),btn("Löschen","danger",()=>removePerson(p.id)));box.append(c);
  });
 }
 async function editPerson(p){
@@ -684,8 +682,7 @@ async function renderDamage(){
 async function closeDamage(rawId){
  if(!adminPin){message("Bitte zuerst Administration mit Admin-PIN öffnen.");return;}
  const damageId=String(rawId||"").trim();
- const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
- if(!uuidPattern.test(damageId)){message("Ungültige Schadensmeldungs-ID.");return;}
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(damageId)){message("Ungültige Schadensmeldungs-ID.");return;}
  if(!confirm("Schadensmeldung als repariert abschließen? Der Status wird auf Lager bzw. Verfügbar gesetzt."))return;
  const {data,error}=await db.rpc("close_damage_report",{p_pin:adminPin,p_damage_id:damageId});
  if(error){message("Schaden konnte nicht abgeschlossen werden: "+error.message);return;}
@@ -693,9 +690,7 @@ async function closeDamage(rawId){
  message("Schaden abgeschlossen. Status wurde zurückgesetzt.");await loadAll();
 }
 async function showQr(type,id,name){
- let targetId;
- try{targetId=bigintId(id,type==="device"?"Geräte-ID":"Fahrzeug-ID");}
- catch(err){message(err.message);return;}
+ const targetId=bigintId(id,type==="device"?"Geräte-ID":"Fahrzeug-ID");
  const url=new URL(location.href);url.search="";
  url.searchParams.set(type==="device"?"device":"vehicle",targetId);
  $("qrTitle").textContent="QR-Code · "+name;$("qrDescription").textContent=url.toString();
@@ -715,7 +710,6 @@ async function compressImage(file){
  canvas.getContext("2d").drawImage(image,0,0,w,h);
  return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("Foto konnte nicht komprimiert werden.")),"image/jpeg",0.78));
 }
-
 document.querySelectorAll("[data-install]").forEach(b=>b.addEventListener("click",()=>$("installModal").classList.remove("hidden")));
 $("installClose").addEventListener("click",()=>$("installModal").classList.add("hidden"));
 $("installModal").addEventListener("click",e=>{if(e.target===$("installModal"))$("installModal").classList.add("hidden");});
@@ -733,8 +727,7 @@ $("takePhoto").addEventListener("click",()=>$("damageCamera").click());
 $("choosePhoto").addEventListener("click",()=>$("damageGallery").click());
 function selectedDamageFile(){return $("damageCamera").files[0]||$("damageGallery").files[0]||null;}
 function photoChanged(){
- const f=selectedDamageFile();
- $("photoSelected").textContent=f?"Ausgewählt: "+f.name:"Kein Foto ausgewählt.";
+ const f=selectedDamageFile();$("photoSelected").textContent=f?"Ausgewählt: "+f.name:"Kein Foto ausgewählt.";
 }
 $("damageCamera").addEventListener("change",photoChanged);
 $("damageGallery").addEventListener("change",photoChanged);
@@ -789,30 +782,45 @@ $("setupForm").addEventListener("submit",async e=>{
  message("Firma erfolgreich eingerichtet.");activeUserId=null;await syncUser(currentUser);
 });
 
+// GERÄT ANLEGEN – automatische GP-Nummer und optionale Hersteller-Seriennummer
 $("deviceForm").addEventListener("submit",async e=>{
  e.preventDefault();
  const pin=adminPin||askPin();if(pin===null)return;
  if(!adminPin&&!await verifyPin(pin))return;
- const {data,error}=await db.rpc("create_device",{
-  p_pin:pin,p_device_name:$("deviceName").value.trim(),p_device_number:"GP-"+Date.now(),
-  p_manufacturer:$("manufacturer").value.trim()||null,p_model:$("model").value.trim()||null,
-  p_location:$("location").value.trim()||null,p_purchase_date:$("purchaseDate").value||null,
+
+ const {data,error}=await db.rpc("create_device_with_serial",{
+  p_pin:pin,
+  p_device_name:$("deviceName").value.trim(),
+  p_serial_number:$("deviceSerialNumber").value.trim()||null,
+  p_manufacturer:$("manufacturer").value.trim()||null,
+  p_model:$("model").value.trim()||null,
+  p_location:$("location").value.trim()||null,
+  p_purchase_date:$("purchaseDate").value||null,
   p_notes:$("notes").value.trim()||null
  });
  if(error){message("Gerät konnte nicht gespeichert werden: "+error.message);return;}
  if(!data){message("Gerät nicht gespeichert. PIN prüfen.");return;}
+
  let newDeviceId;
  try{newDeviceId=bigintId(data,"neue Geräte-ID");}
  catch(err){message("Gerät wurde angelegt, aber die ID konnte nicht erkannt werden: "+err.message);await loadAll();return;}
- const {data:typeData,error:typeError}=await db.rpc("set_device_type_admin",{p_pin:pin,p_id:newDeviceId,p_device_type:$("deviceType").value.trim()});
+
+ const {data:typeData,error:typeError}=await db.rpc("set_device_type_admin",{
+  p_pin:pin,p_id:newDeviceId,p_device_type:$("deviceType").value.trim()
+ });
  if(typeError||!typeData){message("Gerät angelegt, Geräteart aber nicht gespeichert: "+(typeError?.message||"PIN prüfen."));}
+
  const due=$("deviceMaintenanceDue").value||null;
- const {data:dueData,error:dueError}=await db.rpc("set_device_maintenance_due",{p_pin:pin,p_id:newDeviceId,p_due_date:due});
+ const {data:dueData,error:dueError}=await db.rpc("set_device_maintenance_due",{
+  p_pin:pin,p_id:newDeviceId,p_due_date:due
+ });
  if(dueError||dueData!==true){message("Gerät angelegt, Prüfdatum aber nicht gespeichert: "+(dueError?.message||"Datenbankfunktion prüfen."));}
  else message("Gerät erfolgreich angelegt.");
+
  e.target.reset();await loadAll();
 });
 
+// FAHRZEUG ANLEGEN
 $("vehicleForm").addEventListener("submit",async e=>{
  e.preventDefault();const pin=adminPin||askPin();if(pin===null)return;
  if(!adminPin&&!await verifyPin(pin))return;
@@ -836,6 +844,7 @@ $("personForm").addEventListener("submit",async e=>{
  if(r===null)return;
  e.target.reset();message("Person erfolgreich angelegt.");await loadAll();
 });
+
 $("maintenanceForm").addEventListener("submit",async e=>{
  e.preventDefault();const rawId=$("maintenanceDevice").value;
  if(!rawId){message("Bitte ein Gerät auswählen.");return;}
@@ -873,13 +882,9 @@ $("damageForm").addEventListener("submit",async e=>{
   }catch(err){message(err.message||"Foto konnte nicht verarbeitet werden.");return;}
  }
  const payload={
-  company_id:companyId,
-  device_id:type==="device"?targetId:null,
-  vehicle_id:type==="vehicle"?targetId:null,
-  reported_by:currentUser.id,
-  reporter_name:reporter,
-  description,
-  photo_path:photoPath
+  company_id:companyId,device_id:type==="device"?targetId:null,
+  vehicle_id:type==="vehicle"?targetId:null,reported_by:currentUser.id,
+  reporter_name:reporter,description,photo_path:photoPath
  };
  const {error}=await db.from("damage_reports").insert(payload);
  if(error){
@@ -894,6 +899,61 @@ $("damageForm").addEventListener("submit",async e=>{
  await loadAll();
 });
 
+// ADMIN-PIN ÄNDERN
+$("changePinButton").addEventListener("click",async()=>{
+ if(!adminPin){message("Bitte zuerst die Administration öffnen.");return;}
+ const current=prompt("Aktuellen Admin-PIN eingeben:");
+ if(current===null)return;
+ if(!/^[0-9]{4}$/.test(current)){message("Der aktuelle PIN muss vierstellig sein.");return;}
+ const newPin=prompt("Neuen vierstelligen Admin-PIN eingeben:");
+ if(newPin===null)return;
+ if(!/^[0-9]{4}$/.test(newPin)){message("Der neue PIN muss aus genau vier Ziffern bestehen.");return;}
+ const repeat=prompt("Neuen Admin-PIN wiederholen:");
+ if(repeat===null)return;
+ if(newPin!==repeat){message("Die beiden neuen PINs stimmen nicht überein.");return;}
+ const {data,error}=await db.rpc("change_admin_pin",{p_current_pin:current,p_new_pin:newPin});
+ if(error){message("Admin-PIN konnte nicht geändert werden: "+error.message);return;}
+ if(data!==true){message("Admin-PIN konnte nicht geändert werden. Aktuellen PIN prüfen.");return;}
+ adminPin=newPin;
+ message("Admin-PIN wurde erfolgreich geändert.");
+});
+
+// FIRMA UND ALLE DATEN LÖSCHEN
+$("deleteCompanyButton").addEventListener("click",async()=>{
+ if(!adminPin){message("Bitte zuerst die Administration öffnen.");return;}
+ if(!confirm("Alle Daten werden unwiderruflich gelöscht – Fortfahren?"))return;
+ const confirmation=prompt('Zur endgültigen Löschung bitte genau LÖSCHEN eingeben:');
+ if(confirmation===null)return;
+ if(confirmation!=="LÖSCHEN"){message("Bestätigung stimmt nicht. Es wurde nichts gelöscht.");return;}
+ const pin=prompt("Zur Sicherheit bitte deinen vierstelligen Admin-PIN eingeben:");
+ if(pin===null)return;
+ if(!/^[0-9]{4}$/.test(pin)){message("Ungültiger Admin-PIN.");return;}
+ if(!confirm("Letzte Bestätigung: Soll die Firma samt Login und sämtlichen Daten endgültig gelöscht werden?"))return;
+
+ message("Firma und Daten werden gelöscht …");
+ const {data,error}=await db.functions.invoke("delete-company",{
+  body:{pin,confirmation:"LÖSCHEN"}
+ });
+ if(error){message("Löschen fehlgeschlagen: "+error.message);return;}
+ if(data?.error){message("Löschen fehlgeschlagen: "+data.error);return;}
+ if(data?.success!==true){message("Löschen wurde nicht bestätigt. Bitte Supabase prüfen.");return;}
+
+ // Firmenbezogene lokale Auswahl entfernen
+ try{
+  for(let i=localStorage.length-1;i>=0;i--){
+   const key=localStorage.key(i);
+   if(key&&key.startsWith("geraetepass_person_"))localStorage.removeItem(key);
+  }
+ }catch(e){}
+
+ adminPin=null;companyId=null;companyName="";devices=[];people=[];vehicles=[];
+ await db.auth.signOut();
+ activeUserId=null;currentUser=null;
+ showSection("authSection");
+ message("Firma, Daten und Benutzerkonto wurden erfolgreich gelöscht.");
+});
+
+// SUCHEN UND FILTERN
 ["deviceSearch","devicePersonFilter","deviceTypeFilter","deviceSort"].forEach(id=>$(id).addEventListener(id==="deviceSearch"?"input":"change",renderDevices));
 ["vehicleSearch","vehiclePersonFilter","vehicleTypeFilter","vehicleSort"].forEach(id=>$(id).addEventListener(id==="vehicleSearch"?"input":"change",renderVehicles));
 
