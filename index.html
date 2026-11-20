@@ -214,6 +214,8 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 <div class="admin-tiles">
 <button class="admin-tile" data-admin-tab="device"><span>🧰</span>Gerät hinzufügen</button>
 <button class="admin-tile" data-admin-tab="vehicle"><span>🚗</span>Fahrzeug hinzufügen</button>
+<button class="admin-tile" data-admin-tab="manage-devices"><span>🧰</span>Geräte verwalten</button>
+<button class="admin-tile" data-admin-tab="manage-vehicles"><span>🚗</span>Fahrzeuge verwalten</button>
 <button class="admin-tile" data-admin-tab="people"><span>👥</span>Mitarbeiter verwalten</button>
 <button class="admin-tile" data-admin-tab="damage"><span>🛠️</span>Gemeldete Schäden</button>
 <button class="admin-tile" data-admin-tab="security"><span>🔐</span>Sicherheit & Konto</button>
@@ -244,6 +246,21 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 </form></div>
 </div>
 
+<div id="admin-manage-devices" class="admin-content hidden">
+  <div class="card">
+    <h3>Geräte verwalten</h3>
+    <p class="muted">Geräte bearbeiten oder endgültig löschen.</p>
+    <div id="adminDeviceList"></div>
+  </div>
+</div>
+
+<div id="admin-manage-vehicles" class="admin-content hidden">
+  <div class="card">
+    <h3>Fahrzeuge verwalten</h3>
+    <p class="muted">Fahrzeuge bearbeiten oder endgültig löschen.</p>
+    <div id="adminVehicleList"></div>
+  </div>
+</div>
 <div id="admin-people" class="admin-content hidden">
 <div class="card"><h3>Mitarbeiter hinzufügen</h3><form id="personForm"><label>Name des Mitarbeiters</label><input id="personName" required placeholder="Vor- und Nachname"><button type="submit">Person speichern</button></form></div>
 <div class="card"><h3>Personen verwalten</h3><div id="peopleList"></div></div>
@@ -424,9 +441,93 @@ function card(title,detail){
  const p=document.createElement("p");p.textContent=detail||"";
  c.append(h,p);return c;
 }
+function renderAdminDeviceList(){
+ const el=$("adminDeviceList");
+ if(!el)return;
+
+ if(!devices.length){
+  el.innerHTML='<p class="muted">Keine Geräte vorhanden.</p>';
+  return;
+ }
+
+ el.replaceChildren();
+
+ devices.forEach(d=>{
+  const card=document.createElement("div");
+  card.className="card";
+
+  const title=document.createElement("h3");
+  title.textContent=d.device_name||"Unbenanntes Gerät";
+
+  const info=document.createElement("p");
+  info.className="muted";
+  info.textContent="Gerätenummer: "+(d.device_number||"–")+" · Status: "+(d.status||"–");
+
+  const edit=document.createElement("button");
+  edit.textContent="Stammdaten bearbeiten";
+  edit.addEventListener("click",()=>editDevice(d));
+
+  const remove=document.createElement("button");
+  remove.textContent="Gerät löschen";
+  remove.className="danger";
+  remove.addEventListener("click",()=>removeDevice(d.id));
+
+  card.append(title,info,edit,remove);
+  el.appendChild(card);
+ });
+}
+
+function renderAdminVehicleList(){
+ const el=$("adminVehicleList");
+ if(!el)return;
+
+ if(!vehicles.length){
+  el.innerHTML='<p class="muted">Keine Fahrzeuge vorhanden.</p>';
+  return;
+ }
+
+ el.replaceChildren();
+
+ vehicles.forEach(v=>{
+  const card=document.createElement("div");
+  card.className="card";
+
+  const title=document.createElement("h3");
+  title.textContent=v.vehicle_name||"Unbenanntes Fahrzeug";
+
+  const info=document.createElement("p");
+  info.className="muted";
+  info.textContent="Kennzeichen: "+(v.registration_number||"–")+" · Status: "+(v.status||"–");
+
+  const edit=document.createElement("button");
+  edit.textContent="Stammdaten bearbeiten";
+  edit.addEventListener("click",()=>editVehicle(v));
+
+  const remove=document.createElement("button");
+  remove.textContent="Fahrzeug löschen";
+  remove.className="danger";
+  remove.addEventListener("click",()=>removeVehicle(v.id));
+
+  card.append(title,info,edit,remove);
+  el.appendChild(card);
+ });
+}
 function renderAll(){
- renderDashboard();renderDevices();renderVehicles();renderPeople();renderMaintenance();
- if(adminPin)renderDamage();updateDropdowns();updateFilters();updateMyNameButton();
+ renderDashboard();
+ renderDevices();
+ renderVehicles();
+ renderPeople();
+ renderMaintenance();
+
+ if(adminPin){
+  renderDamage();
+  renderAdminDeviceList();
+  renderAdminVehicleList();
+ }
+
+ updateDropdowns();
+ updateFilters();
+ updateMyNameButton();
 }
 function renderDashboard(){
  $("dashDevices").textContent=devices.length+" Geräte";
