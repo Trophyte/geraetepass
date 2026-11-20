@@ -63,11 +63,33 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
  .status-workshop-tile{grid-column:1/-1}
  .admin-tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.gp-logo{
+  width:42px;
+  height:42px;
+  flex-shrink:0;
+  display:block;
+}
 </style>
 </head>
 <body>
 <header>
- <h1>GerätePass</h1>
+ <div class="brand">
+  <svg class="gp-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <path d="M29 9H18C10 9 6 15 6 23V41C6 49 11 55 19 55H29V35H19"
+      fill="none" stroke="#FFFFFF" stroke-width="7"
+      stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M35 55V9H46C54 9 59 14 59 22C59 30 54 35 46 35H35"
+      fill="none" stroke="#8ED8FF" stroke-width="7"
+      stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <h1>GerätePass</h1>
+</div>
  <p>Deine digitale Geräte- und Fahrzeugverwaltung</p>
 </header>
 <main>
