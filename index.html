@@ -26,12 +26,13 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 .menu button.admin-button{min-height:45px;padding:11px 14px;font-size:13px;background:transparent;border:0;color:var(--muted);text-align:right;grid-column:1/-1}
 .page-title{display:flex;align-items:center;gap:10px}.page-title button{margin:0}
 .item-card{border-left:5px solid #16836a;background:#fff;color:var(--text)}
-.item-card.status-use{border-left-color:#1769aa}.item-card.status-damage{border-left-color:#c62828}.item-card.status-maint{border-left-color:#ed8b20}.item-card.status-stock{border-left-color:#16836a}
+.item-card.status-use{border-left-color:#1769aa}.item-card.status-damage{border-left-color:#c62828}.item-card.status-maint{border-left-color:#ed8b20}.item-card.status-stock{border-left-color:#16836a}.item-card.status-workshop{border-left-color:#77708c}
 .item-card h3{margin:0 0 7px}.item-card p{margin:7px 0}
 .tag{display:inline-block;background:#e8eef5;padding:5px 9px;border-radius:20px;font-size:12px;margin:4px 0}
 .filters{display:grid;grid-template-columns:1fr;gap:4px}.filter-panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
 .filter-toggle{background:#e8eef5;color:var(--navy)}
-.text-link{background:transparent;color:var(--blue);padding:6px 0;margin:8px 0 0;font-size:13px;text-decoration:underline;font-weight:normal}.subtle-button{background:#eef2f6;color:#526174;border:1px solid #e1e7ef;font-size:13px;padding:9px 12px}
+.text-link{background:transparent;color:var(--blue);padding:6px 0;margin:8px 0 0;font-size:13px;text-decoration:underline;font-weight:normal}
+.subtle-button{background:#eef2f6;color:#526174;border:1px solid #e1e7ef;font-size:13px;padding:9px 12px}
 .photo{display:block;max-width:100%;width:320px;max-height:260px;object-fit:contain;border-radius:9px;margin-top:10px;background:#f1f3f5}
 .actions{margin-top:10px}.empty{padding:18px;text-align:center;color:var(--muted);background:#fff;border-radius:10px}
 .grid-two{display:grid;grid-template-columns:1fr;gap:12px}
@@ -40,16 +41,38 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 .status-tile{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:82px;margin:0;padding:12px 12px 12px 17px;background:#fff;color:var(--text);border:1px solid var(--line);border-left:5px solid var(--tile-color);border-radius:11px;text-align:left;box-shadow:0 2px 8px #00000008}
 .status-tile strong{font-size:14px;color:var(--text)}.status-tile small{font-size:12px;color:var(--muted);margin-top:5px}
 .status-tile.active{outline:2px solid var(--tile-color);background:#fff;box-shadow:0 0 0 3px color-mix(in srgb,var(--tile-color) 12%,transparent)}
-.status-use-tile{--tile-color:#1769aa}.status-stock-tile{--tile-color:#16836a}.status-maint-tile{--tile-color:#ed8b20}.status-damage-tile{--tile-color:#c62828}
+.status-use-tile{--tile-color:#1769aa}.status-stock-tile{--tile-color:#16836a}.status-maint-tile{--tile-color:#ed8b20}.status-damage-tile{--tile-color:#c62828}.status-workshop-tile{--tile-color:#77708c}
+.status-workshop-tile{grid-column:1/-1;min-height:58px}
+.admin-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.admin-tile{min-height:100px;background:#fff;color:var(--navy);border:1px solid var(--line);text-align:left;padding:16px;margin:0;font-size:15px}
+.admin-tile span{display:block;font-size:25px;margin-bottom:8px}
+.admin-tile.active{outline:2px solid var(--blue);background:#f8fbff}
+.admin-content{margin-top:12px}
 .qr-modal{position:fixed;inset:0;background:#0f172acc;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
-.qr-box{background:#fff;border-radius:14px;padding:20px;max-width:360px;width:100%;text-align:center}.qr-box img{width:230px;height:230px;object-fit:contain;max-width:100%}
+.qr-box{background:#fff;border-radius:14px;padding:20px;max-width:380px;width:100%;text-align:center;max-height:90vh;overflow:auto}
+.qr-box img{width:230px;height:230px;object-fit:contain;max-width:100%}
 .form-note{font-size:13px;color:var(--muted)}
-@media(min-width:700px){.menu{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid-two{grid-template-columns:1fr 1fr}.status-tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.photo-buttons{display:flex;gap:8px;flex-wrap:wrap;margin:5px 0 10px}
+.photo-buttons button{flex:1;min-width:140px}
+.name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.name-row button{margin:0}
+@media(min-width:700px){
+ .menu{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .grid-two{grid-template-columns:1fr 1fr}
+ .status-tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .status-workshop-tile{grid-column:1/-1}
+ .admin-tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
 </style>
 </head>
 <body>
-<header><h1>GerätePass</h1><p>Deine digitale Geräte- und Fahrzeugverwaltung</p></header>
+<header>
+ <h1>GerätePass</h1>
+ <p>Deine digitale Geräte- und Fahrzeugverwaltung</p>
+</header>
 <main>
+
 <section id="authSection" class="card hidden">
 <h2>Anmelden</h2><p>Mit dem Firmenkonto anmelden.</p>
 <form id="loginForm">
@@ -57,8 +80,10 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 <label>Passwort</label><input id="password" type="password" required autocomplete="current-password">
 <button type="submit">Anmelden</button>
 </form>
-<div style="margin-top:14px"><button type="button" class="text-link" id="registerToggle">Neue Firma registrieren</button>
-<div id="registerArea" class="hidden"><p class="muted">Erstelle ein Firmenkonto und richte anschließend Firma und Admin-PIN ein.</p>
+<div style="margin-top:14px">
+<button type="button" class="text-link" id="registerToggle">Neue Firma registrieren</button>
+<div id="registerArea" class="hidden">
+<p class="muted">Erstelle ein Firmenkonto und richte anschließend Firma und Admin-PIN ein.</p>
 <form id="registerForm">
 <label>Firmen-E-Mail</label><input id="regEmail" type="email" required>
 <label>Passwort (mindestens 6 Zeichen)</label><input id="regPassword" type="password" minlength="6" required>
@@ -78,8 +103,11 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 
 <section id="appSection" class="hidden">
 <div class="topbar">
-<div><h2 id="companyHeading">Dashboard</h2><div class="muted" id="companyLabel"></div></div>
-<button id="logout" class="secondary">Abmelden</button>
+ <div><h2 id="companyHeading">Dashboard</h2><div class="muted" id="companyLabel"></div></div>
+ <div class="name-row">
+  <button id="myNameButton" class="subtle-button">👤 Mein Name</button>
+  <button id="logout" class="secondary">Abmelden</button>
+ </div>
 </div>
 
 <section id="page-dashboard" class="page">
@@ -100,6 +128,7 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 <button class="status-tile status-stock-tile" data-device-status="Lager"><strong>Lager</strong><small id="deviceCountStock">0 Geräte</small></button>
 <button class="status-tile status-maint-tile" data-device-status="Wartung fällig"><strong>Wartung fällig</strong><small id="deviceCountMaint">0 Geräte</small></button>
 <button class="status-tile status-damage-tile" data-device-status="Beschädigt"><strong>Beschädigt</strong><small id="deviceCountDamage">0 Geräte</small></button>
+<button class="status-tile status-workshop-tile" data-device-status="In Werkstatt / Abgegeben"><strong>🔧 In Werkstatt / Abgegeben</strong><small id="deviceCountWorkshop">0 Geräte</small></button>
 </div></div>
 <input id="deviceSearch" placeholder="Gerät suchen …">
 <button class="filter-toggle" data-toggle="deviceFilters">Filter anzeigen</button>
@@ -117,6 +146,7 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 <button class="status-tile status-stock-tile" data-vehicle-status="Verfügbar"><strong>Verfügbar</strong><small id="vehicleCountStock">0 Fahrzeuge</small></button>
 <button class="status-tile status-maint-tile" data-vehicle-status="Wartung fällig"><strong>Wartung fällig</strong><small id="vehicleCountMaint">0 Fahrzeuge</small></button>
 <button class="status-tile status-damage-tile" data-vehicle-status="Beschädigt"><strong>Beschädigt</strong><small id="vehicleCountDamage">0 Fahrzeuge</small></button>
+<button class="status-tile status-workshop-tile" data-vehicle-status="In Werkstatt / Abgegeben"><strong>🔧 In Werkstatt / Abgegeben</strong><small id="vehicleCountWorkshop">0 Fahrzeuge</small></button>
 </div></div>
 <input id="vehicleSearch" placeholder="Fahrzeug, Kennzeichen oder Modell suchen …">
 <button class="filter-toggle" data-toggle="vehicleFilters">Filter anzeigen</button>
@@ -144,43 +174,80 @@ button.secondary{background:#64748b}button.danger{background:#b42318}button.ligh
 <label>Gerät / Fahrzeug</label><select id="damageTarget" required></select>
 <label>Name des Meldenden *</label><input id="damageReporter" required placeholder="Vor- und Nachname">
 <label>Beschreibung des Schadens *</label><textarea id="damageDescription" required placeholder="Was ist passiert?"></textarea>
-<label>Foto (optional)</label><input id="damagePhoto" type="file" accept="image/*" capture="environment">
+<label>Foto aufnehmen (optional)</label>
+<div class="photo-buttons">
+<button type="button" id="takePhoto" class="light">📷 Foto aufnehmen</button>
+<button type="button" id="choosePhoto" class="light">🖼️ Bild / Datei auswählen</button>
+</div>
+<input id="damageCamera" type="file" accept="image/*" capture="environment" class="hidden">
+<input id="damageGallery" type="file" accept="image/*" class="hidden">
+<p id="photoSelected" class="form-note">Kein Foto ausgewählt.</p>
 <p class="form-note">Das Foto wird vor dem Upload verkleinert und komprimiert.</p>
 <button type="submit">Schaden melden</button>
 </form></div>
 </section>
 
 <section id="page-admin" class="page hidden">
-<div class="page-title"><button class="light" data-home>‹ Zurück</button><h2>Administration</h2></div>
+<div class="page-title"><button class="light" data-home>‹ Dashboard</button><h2>Administration</h2></div>
 <p class="muted">Dieser Bereich ist mit dem Admin-PIN freigeschaltet. Stammdatenänderungen werden zusätzlich serverseitig geprüft.</p>
-<div class="grid-two">
+
+<div class="admin-tiles">
+<button class="admin-tile" data-admin-tab="device"><span>🧰</span>Gerät hinzufügen</button>
+<button class="admin-tile" data-admin-tab="vehicle"><span>🚗</span>Fahrzeug hinzufügen</button>
+<button class="admin-tile" data-admin-tab="people"><span>👥</span>Mitarbeiter verwalten</button>
+<button class="admin-tile" data-admin-tab="damage"><span>🛠️</span>Gemeldete Schäden</button>
+</div>
+
+<div id="admin-device" class="admin-content hidden">
 <div class="card"><h3>Gerät anlegen</h3><form id="deviceForm">
 <label>Gerätename *</label><input id="deviceName" required placeholder="z. B. Akkuschrauber">
 <label>Geräteart</label><input id="deviceType" placeholder="z. B. Werkzeug, Funkgerät, Maschine">
 <label>Hersteller</label><input id="manufacturer"><label>Modell</label><input id="model">
 <label>Standort</label><input id="location"><label>Kaufdatum</label><input id="purchaseDate" type="date">
+<label>Nächste Prüfung / Wartung bis</label><input id="deviceMaintenanceDue" type="date">
 <label>Notizen</label><textarea id="notes"></textarea><button type="submit">Gerät speichern</button>
 </form></div>
+</div>
+
+<div id="admin-vehicle" class="admin-content hidden">
 <div class="card"><h3>Fahrzeug anlegen</h3><form id="vehicleForm">
 <label>Fahrzeugname *</label><input id="vehicleName" required placeholder="z. B. Transporter 1">
 <label>Kennzeichen</label><input id="vehicleRegistration">
 <label>Fahrzeugart</label><input id="vehicleType" placeholder="z. B. PKW, Transporter, LKW">
 <label>Hersteller</label><input id="vehicleManufacturer"><label>Modell</label><input id="vehicleModel">
 <label>Kilometerstand</label><input id="vehicleMileage" type="number" min="0">
-<label>Nächste Überprüfung / Pickerl</label><input id="vehicleInspection" type="date">
+<label>Pickerl gültig bis</label><input id="vehicleInspection" type="date">
 <label>Notizen</label><textarea id="vehicleNotes"></textarea><button type="submit">Fahrzeug speichern</button>
 </form></div>
 </div>
-<div class="card"><h3>Person hinzufügen</h3><form id="personForm"><label>Name des Mitarbeiters</label><input id="personName" required placeholder="Vor- und Nachname"><button type="submit">Person speichern</button></form></div>
-<div class="card"><h3>Personen verwalten</h3><div id="peopleList"></div></div>
-<div class="card"><h3>Gemeldete Schäden</h3><p class="muted">Nur offene Schadensmeldungen. Hier kannst du Reparaturen abschließen.</p><div id="adminDamageList"></div></div>
-</section>
-</section>
-<div id="message" role="status" aria-live="polite"></div>
-<div id="installModal" class="qr-modal hidden" role="dialog" aria-modal="true" aria-label="App installieren"><div class="qr-box" style="text-align:left"><h3>GerätePass am Handy speichern</h3><p><strong>iPhone (Safari)</strong></p><ol><li>GerätePass in Safari öffnen und auf <strong>Teilen</strong> tippen.</li><li><strong>Zum Home-Bildschirm</strong> wählen und mit „Hinzufügen“ bestätigen.</li></ol><p><strong>Android (Chrome)</strong></p><ol><li>GerätePass in Chrome öffnen und auf die <strong>3 Punkte</strong> tippen.</li><li><strong>App installieren</strong> oder „Zum Startbildschirm hinzufügen“ wählen.</li></ol><button id="installClose" class="secondary">Schließen</button></div></div>
-<div id="qrModal" class="qr-modal hidden" role="dialog" aria-modal="true" aria-label="QR-Code"><div class="qr-box"><h3 id="qrTitle">QR-Code</h3><img id="qrImage" alt="QR-Code"><p class="muted" id="qrDescription"></p><button id="qrClose" class="secondary">Schließen</button></div></div>
-</main>
 
+<div id="admin-people" class="admin-content hidden">
+<div class="card"><h3>Mitarbeiter hinzufügen</h3><form id="personForm"><label>Name des Mitarbeiters</label><input id="personName" required placeholder="Vor- und Nachname"><button type="submit">Person speichern</button></form></div>
+<div class="card"><h3>Personen verwalten</h3><div id="peopleList"></div></div>
+</div>
+
+<div id="admin-damage" class="admin-content hidden">
+<div class="card"><h3>Gemeldete Schäden</h3><p class="muted">Nur offene Schadensmeldungen. Hier kannst du Reparaturen abschließen.</p><div id="adminDamageList"></div></div>
+</div>
+</section>
+</section>
+
+<div id="message" role="status" aria-live="polite"></div>
+
+<div id="installModal" class="qr-modal hidden" role="dialog" aria-modal="true" aria-label="App installieren">
+<div class="qr-box" style="text-align:left"><h3>GerätePass am Handy speichern</h3><p><strong>iPhone (Safari)</strong></p><ol><li>GerätePass in Safari öffnen und auf <strong>Teilen</strong> tippen.</li><li><strong>Zum Home-Bildschirm</strong> wählen und mit „Hinzufügen“ bestätigen.</li></ol><p><strong>Android (Chrome)</strong></p><ol><li>GerätePass in Chrome öffnen und auf die <strong>3 Punkte</strong> tippen.</li><li><strong>App installieren</strong> oder „Zum Startbildschirm hinzufügen“ wählen.</li></ol><button id="installClose" class="secondary">Schließen</button></div></div>
+
+<div id="qrModal" class="qr-modal hidden" role="dialog" aria-modal="true" aria-label="QR-Code"><div class="qr-box"><h3 id="qrTitle">QR-Code</h3><img id="qrImage" alt="QR-Code"><p class="muted" id="qrDescription"></p><button id="qrClose" class="secondary">Schließen</button></div></div>
+
+<div id="nameModal" class="qr-modal hidden" role="dialog" aria-modal="true" aria-label="Handy-Nutzer auswählen">
+<div class="qr-box" style="text-align:left">
+<h3>👤 Wer nutzt dieses Handy?</h3>
+<p class="muted">Wähle deinen Namen aus der Mitarbeiterliste. Er wird nur auf diesem Handy gespeichert.</p>
+<label>Mein Name</label><select id="myNameSelect"><option value="">Mitarbeiter auswählen</option></select>
+<button id="saveMyName">Namen speichern</button>
+<button id="cancelMyName" class="secondary">Später</button>
+</div></div>
+</main>
 <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import QRCode from "https://esm.sh/qrcode@1.5.4";
@@ -190,31 +257,93 @@ const SUPABASE_KEY = "sb_publishable_O03wMjdn_G6TMGpS7bLXOg_HNNLd28n";
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 
-let currentUser=null, companyId=null, companyName="";
-let devices=[], people=[], vehicles=[], maintenanceItems=[], damageItems=[];
-let adminPin=null, initialising=false, activeUserId=null;
-let activeDeviceStatus="In Verwendung", activeVehicleStatus="In Verwendung";
+let currentUser=null,companyId=null,companyName="";
+let devices=[],people=[],vehicles=[],maintenanceItems=[],damageItems=[];
+let adminPin=null,initialising=false,activeUserId=null;
+let activeDeviceStatus="In Verwendung",activeVehicleStatus="In Verwendung";
+let myPersonId=localStorage.getItem("geraetepass_person_"+(companyId||""))||"";
+
+const DEVICE_STATUSES=["In Verwendung","Lager","Wartung fällig","Beschädigt","In Werkstatt / Abgegeben"];
+const VEHICLE_STATUSES=["In Verwendung","Verfügbar","Wartung fällig","Beschädigt","In Werkstatt / Abgegeben"];
 
 function message(text){$("message").textContent=text;}
 function showSection(id){["authSection","setupSection","appSection"].forEach(x=>$(x).classList.add("hidden"));$(id).classList.remove("hidden");}
 function askPin(){const p=prompt("Bitte vierstelligen Admin-PIN eingeben:");if(p===null)return null;if(!/^[0-9]{4}$/.test(p)){message("Der Admin-PIN muss aus genau vier Ziffern bestehen.");return null;}return p;}
+
 async function verifyPin(pin){
  const {data,error}=await db.rpc("verify_admin_pin",{p_pin:pin});
  if(error){message("PIN-Prüfung fehlgeschlagen: "+error.message);return false;}
- if(data!==true){message("Falscher PIN oder PIN-Sperre aktiv.");return false;}return true;
+ if(data!==true){message("Falscher PIN oder PIN-Sperre aktiv.");return false;}
+ return true;
 }
 async function adminAction(name,args){
  const pin=adminPin||askPin();if(pin===null)return null;
- if(!adminPin && !await verifyPin(pin))return null;
+ if(!adminPin&&!await verifyPin(pin))return null;
  const {data,error}=await db.rpc(name,{p_pin:pin,...args});
  if(error){message("Fehler: "+error.message);return null;}
  if(data===null||data===false){message("Aktion nicht möglich. PIN oder Berechtigung prüfen.");return null;}
  return data;
 }
+function personName(id){return people.find(p=>String(p.id)===String(id))?.name||"Niemand zugewiesen";}
+function bigintId(value,label="ID"){
+ const id=String(value??"").trim();
+ if(!/^[0-9]+$/.test(id))throw new Error("Ungültige "+label+": Es wird eine BIGINT-ID erwartet.");
+ return id;
+}
+function statusClass(status){
+ if(status==="Beschädigt")return"status-damage";
+ if(status==="Wartung fällig")return"status-maint";
+ if(status==="In Verwendung")return"status-use";
+ if(status==="In Werkstatt / Abgegeben")return"status-workshop";
+ return"status-stock";
+}
+function isDue(date){
+ if(!date)return false;
+ const due=new Date(date+"T23:59:59");
+ if(Number.isNaN(due.getTime()))return false;
+ const today=new Date();today.setHours(0,0,0,0);
+ const days=(due.getTime()-today.getTime())/86400000;
+ return days<=30;
+}
+function isProtectedStatus(status){
+ return status==="Beschädigt"||status==="In Werkstatt / Abgegeben";
+}
+function personStorageKey(){return "geraetepass_person_"+companyId;}
+function savedPerson(){
+ const id=localStorage.getItem(personStorageKey())||"";
+ return people.find(p=>String(p.id)===String(id))||null;
+}
+function updateMyNameButton(){
+ const p=savedPerson();
+ $("myNameButton").textContent=p?"👤 "+p.name:"👤 Mein Name";
+}
+function openNamePicker(force=false){
+ const el=$("myNameSelect");el.replaceChildren(new Option("Mitarbeiter auswählen",""));
+ people.forEach(p=>el.add(new Option(p.name,p.id)));
+ const current=localStorage.getItem(personStorageKey())||"";
+ el.value=people.some(p=>String(p.id)===current)?current:"";
+ $("nameModal").classList.remove("hidden");
+ $("cancelMyName").classList.toggle("hidden",force);
+}
+function closeNamePicker(){$("nameModal").classList.add("hidden");}
+function ensureMyName(){
+ updateMyNameButton();
+ if(people.length&&!savedPerson())openNamePicker(true);
+}
+async function saveMyName(){
+ const id=$("myNameSelect").value;
+ if(!id){message("Bitte einen Mitarbeiter auswählen.");return;}
+ if(!people.some(p=>String(p.id)===id)){message("Dieser Mitarbeiter ist nicht mehr vorhanden.");return;}
+ localStorage.setItem(personStorageKey(),id);
+ myPersonId=id;updateMyNameButton();closeNamePicker();
+ message("Dein Name wurde auf diesem Handy gespeichert.");
+ renderDevices();renderVehicles();
+}
+
 async function syncUser(user){
  if(initialising)return;
  const id=user?.id||null;
- if(id===activeUserId && companyId)return;
+ if(id===activeUserId&&companyId)return;
  initialising=true;activeUserId=id;currentUser=user||null;adminPin=null;companyId=null;
  try{
   if(!user){showSection("authSection");return;}
@@ -226,8 +355,29 @@ async function syncUser(user){
   if(companyError){message("Firma konnte nicht geladen werden: "+companyError.message);return;}
   companyName=company.name;$("companyLabel").textContent=companyName;
   showSection("appSection");navigate("dashboard");await loadAll();
+  ensureMyName();
  }finally{initialising=false;}
 }
+
+async function applyDueStatuses(){
+ const updates=[];
+ for(const d of devices){
+  if(isDue(d.maintenance_due)&&!isProtectedStatus(d.status)&&d.status!=="Wartung fällig"){
+   updates.push({table:"devices",item:d,status:"Wartung fällig"});
+  }
+ }
+ for(const v of vehicles){
+  if(isDue(v.inspection_due)&&!isProtectedStatus(v.status)&&v.status!=="Wartung fällig"){
+   updates.push({table:"vehicles",item:v,status:"Wartung fällig"});
+  }
+ }
+ for(const u of updates){
+  const {error}=await db.from(u.table).update({status:u.status,assigned_person_id:null}).eq("id",u.item.id).eq("company_id",companyId);
+  if(!error){u.item.status=u.status;u.item.assigned_person_id=null;}
+  else message("Prüffrist-Status konnte nicht automatisch aktualisiert werden: "+error.message);
+ }
+}
+
 async function loadAll(){
  if(!companyId)return;
  const results=await Promise.all([
@@ -237,61 +387,132 @@ async function loadAll(){
   db.from("vehicles").select("*").eq("company_id",companyId).order("created_at",{ascending:false})
  ]);
  const labels=["Geräte","Personen","Wartung","Fahrzeuge"];
- for(let i=0;i<results.length;i++){if(results[i].error){message(labels[i]+" konnten nicht geladen werden: "+results[i].error.message);return;}}
+ for(let i=0;i<results.length;i++){
+  if(results[i].error){message(labels[i]+" konnten nicht geladen werden: "+results[i].error.message);return;}
+ }
  [devices,people,maintenanceItems,vehicles]=results.map(r=>r.data||[]);
- if(adminPin){const {data,error}=await db.rpc("get_open_damage_reports",{p_pin:adminPin});if(error){damageItems=[];message("Gemeldete Schäden konnten nicht geladen werden: "+error.message);}else damageItems=data||[];}else damageItems=[];
+ await applyDueStatuses();
+ if(adminPin){
+  const {data,error}=await db.rpc("get_open_damage_reports",{p_pin:adminPin});
+  if(error){damageItems=[];message("Gemeldete Schäden konnten nicht geladen werden: "+error.message);}
+  else damageItems=data||[];
+ }else damageItems=[];
  renderAll();
+ if(companyId)updateMyNameButton();
 }
-function btn(text,cls,fn){const b=document.createElement("button");b.textContent=text;if(cls)b.className=cls;b.addEventListener("click",fn);return b;}
-function card(title,detail){const c=document.createElement("div");c.className="card";const h=document.createElement("h3");h.textContent=title;const p=document.createElement("p");p.textContent=detail||"";c.append(h,p);return c;}
-function personName(id){return people.find(p=>String(p.id)===String(id))?.name||"Niemand zugewiesen";}
-function statusClass(status,vehicle=false){if(status==="Beschädigt")return"status-damage";if(status==="Wartung fällig")return"status-maint";if(status==="In Verwendung")return"status-use";return"status-stock";}
-function bigintId(value,label="ID"){
- const id=String(value??"").trim();
- if(!/^[0-9]+$/.test(id))throw new Error("Ungültige "+label+": Es wird eine BIGINT-ID erwartet, keine UUID.");
- return id;
+
+function btn(text,cls,fn){
+ const b=document.createElement("button");b.textContent=text;if(cls)b.className=cls;b.addEventListener("click",fn);return b;
 }
-function renderAll(){renderDashboard();renderDevices();renderVehicles();renderPeople();renderMaintenance();if(adminPin)renderDamage();updateDropdowns();updateFilters();}
+function card(title,detail){
+ const c=document.createElement("div");c.className="card";
+ const h=document.createElement("h3");h.textContent=title;
+ const p=document.createElement("p");p.textContent=detail||"";
+ c.append(h,p);return c;
+}
+function renderAll(){
+ renderDashboard();renderDevices();renderVehicles();renderPeople();renderMaintenance();
+ if(adminPin)renderDamage();
+ updateDropdowns();updateFilters();updateMyNameButton();
+}
 function renderDashboard(){
  $("dashDevices").textContent=devices.length+" Geräte";
  $("dashVehicles").textContent=vehicles.length+" Fahrzeuge";
 }
 function renderStatusTiles(){
  const count=(items,status,vehicle=false)=>items.filter(x=>vehicle&&status==="Verfügbar"?(x.status==="Verfügbar"||x.status==="Lager"):x.status===status).length;
- [["deviceCountUse","In Verwendung"],["deviceCountStock","Lager"],["deviceCountMaint","Wartung fällig"],["deviceCountDamage","Beschädigt"]].forEach(([id,status])=>$(id).textContent=count(devices,status)+" Geräte");
- [["vehicleCountUse","In Verwendung"],["vehicleCountStock","Verfügbar"],["vehicleCountMaint","Wartung fällig"],["vehicleCountDamage","Beschädigt"]].forEach(([id,status])=>$(id).textContent=count(vehicles,status,true)+" Fahrzeuge");
+ const deviceCounts=[
+  ["deviceCountUse","In Verwendung"],["deviceCountStock","Lager"],
+  ["deviceCountMaint","Wartung fällig"],["deviceCountDamage","Beschädigt"],
+  ["deviceCountWorkshop","In Werkstatt / Abgegeben"]
+ ];
+ const vehicleCounts=[
+  ["vehicleCountUse","In Verwendung"],["vehicleCountStock","Verfügbar"],
+  ["vehicleCountMaint","Wartung fällig"],["vehicleCountDamage","Beschädigt"],
+  ["vehicleCountWorkshop","In Werkstatt / Abgegeben"]
+ ];
+ deviceCounts.forEach(([id,s])=>$(id).textContent=count(devices,s)+" Geräte");
+ vehicleCounts.forEach(([id,s])=>$(id).textContent=count(vehicles,s,true)+" Fahrzeuge");
  document.querySelectorAll("[data-device-status]").forEach(b=>b.classList.toggle("active",b.dataset.deviceStatus===activeDeviceStatus));
  document.querySelectorAll("[data-vehicle-status]").forEach(b=>b.classList.toggle("active",b.dataset.vehicleStatus===activeVehicleStatus));
 }
+
 function updateFilters(){
- const configs=[["devicePersonFilter","Alle Mitarbeiter"],["vehiclePersonFilter","Alle Fahrer"]];
- configs.forEach(([id,label])=>{const el=$(id),v=el.value;el.replaceChildren(new Option(label,""));people.forEach(p=>el.add(new Option(p.name,p.id)));el.value=v;});
- [["deviceTypeFilter","Alle Gerätearten",devices.map(d=>d.device_type)],["vehicleTypeFilter","Alle Fahrzeugarten",vehicles.map(v=>v.vehicle_type)]].forEach(([id,label,vals])=>{const el=$(id),v=el.value;el.replaceChildren(new Option(label,""));[...new Set(vals.filter(Boolean))].sort().forEach(x=>el.add(new Option(x,x)));el.value=v;});
+ [["devicePersonFilter","Alle Mitarbeiter"],["vehiclePersonFilter","Alle Fahrer"]].forEach(([id,label])=>{
+  const el=$(id),v=el.value;el.replaceChildren(new Option(label,""));
+  people.forEach(p=>el.add(new Option(p.name,p.id)));el.value=v;
+ });
+ [["deviceTypeFilter","Alle Gerätearten",devices.map(d=>d.device_type)],["vehicleTypeFilter","Alle Fahrzeugarten",vehicles.map(v=>v.vehicle_type)]].forEach(([id,label,vals])=>{
+  const el=$(id),v=el.value;el.replaceChildren(new Option(label,""));
+  [...new Set(vals.filter(Boolean))].sort().forEach(x=>el.add(new Option(x,x)));el.value=v;
+ });
+}
+
+async function changeAssignment(table,id,personId){
+ const values={assigned_person_id:personId||null};
+ const {error}=await db.from(table).update(values).eq("id",id).eq("company_id",companyId);
+ if(error){message("Zuweisung fehlgeschlagen: "+error.message);await loadAll();return;}
+ await loadAll();
+}
+async function changeStatus(table,id,newStatus,isVehicle=false){
+ const stock=isVehicle?"Verfügbar":"Lager";
+ if(newStatus==="Beschädigt"){
+  message("Beschädigt kann nur über eine Schadensmeldung gesetzt werden.");await loadAll();return;
+ }
+ let assigned=null;
+ if(newStatus==="In Verwendung"){
+  const current=(isVehicle?vehicles:devices).find(x=>String(x.id)===String(id));
+  const saved=savedPerson();
+  assigned=saved?.id||current?.assigned_person_id||null;
+  if(!assigned){
+   message("Bitte zuerst unter „Mein Name“ einen Mitarbeiter auswählen oder im Mitarbeiterfeld zuweisen.");
+   await loadAll();return;
+  }
+ }else if([stock,"In Werkstatt / Abgegeben","Wartung fällig"].includes(newStatus)){
+  assigned=null;
+ }
+ const {error}=await db.from(table).update({status:newStatus,assigned_person_id:assigned}).eq("id",id).eq("company_id",companyId);
+ if(error){message("Statusänderung fehlgeschlagen: "+error.message);await loadAll();return;}
+ message("Status gespeichert.");
+ if(isVehicle)activeVehicleStatus=newStatus;else activeDeviceStatus=newStatus;
+ await loadAll();
 }
 function renderDevices(){
  renderStatusTiles();const box=$("deviceList");box.replaceChildren();
  const q=$("deviceSearch").value.toLowerCase(),pf=$("devicePersonFilter").value,tf=$("deviceTypeFilter").value;
  let rows=devices.filter(d=>d.status===activeDeviceStatus&&[d.device_name,d.device_number,d.manufacturer,d.model,d.location,d.device_type].some(x=>String(x||"").toLowerCase().includes(q))&&(!pf||String(d.assigned_person_id)===pf)&&(!tf||d.device_type===tf));
- const sort=$("deviceSort").value;rows.sort((a,b)=>sort==="name-desc"?(b.device_name||"").localeCompare(a.device_name||""):sort==="person"?personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id)):sort==="type"?(a.device_type||"").localeCompare(b.device_type||""):(a.device_name||"").localeCompare(b.device_name||""));
+ const sort=$("deviceSort").value;
+ rows.sort((a,b)=>sort==="name-desc"?(b.device_name||"").localeCompare(a.device_name||""):sort==="person"?personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id)):sort==="type"?(a.device_type||"").localeCompare(b.device_type||""):(a.device_name||"").localeCompare(b.device_name||""));
  if(!rows.length){box.append(Object.assign(document.createElement("div"),{className:"empty",textContent:"Keine Geräte in diesem Status gefunden."}));return;}
  rows.forEach(d=>{
-  const c=document.createElement("div");c.className="card item-card "+statusClass(d.status);const h=document.createElement("h3");h.textContent=d.device_name||"Gerät";
+  const c=document.createElement("div");c.className="card item-card "+statusClass(d.status);
+  const h=document.createElement("h3");h.textContent=d.device_name||"Gerät";
   const info=document.createElement("p");info.className="muted";info.textContent=[d.device_number,d.device_type,d.manufacturer,d.model,d.location].filter(Boolean).join(" · ");
-  const sl=document.createElement("label");sl.textContent="Status";let st;
-  if(d.status==="Beschädigt"){st=document.createElement("p");st.className="tag";st.textContent="Beschädigt · Reparatur im Admin-Bereich abschließen";}
-  else{st=document.createElement("select");["Lager","In Verwendung","Wartung fällig"].forEach(x=>st.add(new Option(x,x)));st.value=d.status||"Lager";st.addEventListener("change",()=>updateDevice(d.id,{status:st.value}));}
-  const pl=document.createElement("label");pl.textContent="Mitarbeiter zuweisen";const person=document.createElement("select");person.add(new Option("Niemand / zurückgeben",""));people.forEach(x=>person.add(new Option(x.name,x.id)));person.value=d.assigned_person_id||"";person.addEventListener("change",()=>updateDevice(d.id,{assigned_person_id:person.value||null}));
-  const actions=document.createElement("div");actions.className="actions";actions.append(btn("Schaden melden","light",()=>openDamageFor("device",d.id)),btn("QR-Code anzeigen","light",()=>showQr("device",d.id,d.device_name||"Gerät")));
+  const due=document.createElement("p");due.className="muted";due.textContent="Nächste Prüfung / Wartung bis: "+(d.maintenance_due||"Nicht eingetragen");
+  const sl=document.createElement("label");sl.textContent="Status";
+  let st;
+  if(d.status==="Beschädigt") {st=document.createElement("p");st.className="tag";st.textContent="Beschädigt · Reparatur im Admin-Bereich abschließen";}
+  else {
+   st=document.createElement("select");
+   DEVICE_STATUSES.filter(x=>x!=="Beschädigt").forEach(x=>st.add(new Option(x,x)));
+   st.value=d.status||"Lager";
+   st.addEventListener("change",()=>changeStatus("devices",d.id,st.value,false));
+  }
+  const pl=document.createElement("label");pl.textContent="Mitarbeiter zuweisen";
+  const person=document.createElement("select");person.add(new Option("Niemand / zurückgeben",""));
+  people.forEach(x=>person.add(new Option(x.name,x.id)));
+  person.value=d.assigned_person_id||"";
+  person.addEventListener("change",()=>changeAssignment("devices",d.id,person.value));
+  const actions=document.createElement("div");actions.className="actions";
+  actions.append(btn("Schaden melden","light",()=>openDamageFor("device",d.id)),btn("QR-Code anzeigen","light",()=>showQr("device",d.id,d.device_name||"Gerät")));
   if(adminPin)actions.append(btn("Stammdaten bearbeiten","light",()=>editDevice(d)),btn("Gerät löschen","danger",()=>removeDevice(d.id)));
-  c.append(h,info,sl,st,pl,person,actions);box.append(c);
+  c.append(h,info,due,sl,st,pl,person,actions);box.append(c);
  });
 }
 function selectDeviceStatus(status){activeDeviceStatus=status;renderDevices();}
 
 async function updateDevice(id,values){
- if(values.status==="Beschädigt"){message("Beschädigt kann nur über eine Schadensmeldung gesetzt werden.");return;}
- let deviceId;
- try{deviceId=bigintId(id,"Geräte-ID");}catch(err){message(err.message);return;}
+ let deviceId;try{deviceId=bigintId(id,"Geräte-ID");}catch(err){message(err.message);return;}
  const {error}=await db.from("devices").update(values).eq("id",deviceId).eq("company_id",companyId);
  if(error){message("Geräteänderung fehlgeschlagen: "+error.message);await loadAll();return;}
  message("Änderung gespeichert.");await loadAll();
@@ -302,39 +523,54 @@ async function editDevice(d){
  const manufacturer=prompt("Hersteller:",d.manufacturer||"");if(manufacturer===null)return;
  const model=prompt("Modell:",d.model||"");if(model===null)return;
  const loc=prompt("Standort:",d.location||"");if(loc===null)return;
+ const due=prompt("Nächste Prüfung / Wartung bis (YYYY-MM-DD):",d.maintenance_due||"");if(due===null)return;
  const notes=prompt("Notizen:",d.notes||"");if(notes===null)return;
  const pin=adminPin;if(!pin){message("Bitte zuerst Administration mit PIN öffnen.");return;}
- let deviceId;
- try{deviceId=bigintId(d.id,"Geräte-ID");}catch(err){message(err.message);return;}
- const {data,error}=await db.rpc("update_device_master",{p_pin:pin,p_id:deviceId,p_device_name:name.trim(),p_manufacturer:manufacturer.trim(),p_model:model.trim(),p_location:loc.trim(),p_notes:notes.trim()});
- if(error){message("Gerät konnte nicht bearbeitet werden: "+error.message);return;}if(!data){message("Änderung nicht möglich. PIN prüfen.");return;}
- const {data:typeData,error:typeError}=await db.rpc("set_device_type_admin",{p_pin:pin,p_id:deviceId,p_device_type:type.trim()});
- if(typeError||!typeData)message("Gerätedaten gespeichert, Geräteart aber nicht geändert: "+(typeError?.message||"PIN prüfen."));else message("Gerätedaten gespeichert.");
+ let id;try{id=bigintId(d.id,"Geräte-ID");}catch(err){message(err.message);return;}
+ const {data,error}=await db.rpc("update_device_master",{p_pin:pin,p_id:id,p_device_name:name.trim(),p_manufacturer:manufacturer.trim(),p_model:model.trim(),p_location:loc.trim(),p_notes:notes.trim()});
+ if(error){message("Gerät konnte nicht bearbeitet werden: "+error.message);return;}
+ if(!data){message("Änderung nicht möglich. PIN prüfen.");return;}
+ const {data:dueData,error:dueError}=await db.rpc("set_device_maintenance_due",{p_pin:pin,p_id:id,p_due_date:due.trim()||null});
+ if(dueError||dueData!==true){message("Gerätedaten gespeichert, Prüfdatum aber nicht geändert: "+(dueError?.message||"Datenbankfunktion prüfen."));}
+ else message("Gerätedaten gespeichert.");
+ const {data:typeData,error:typeError}=await db.rpc("set_device_type_admin",{p_pin:pin,p_id:id,p_device_type:type.trim()});
+ if(typeError||!typeData)message("Gerätedaten gespeichert, Geräteart aber nicht geändert: "+(typeError?.message||"PIN prüfen."));
  await loadAll();
 }
 async function removeDevice(id){
  if(!confirm("Gerät wirklich endgültig löschen?"))return;
  let deviceId;try{deviceId=bigintId(id,"Geräte-ID");}catch(err){message(err.message);return;}
- const r=await adminAction("delete_device",{p_id:deviceId});if(r===null)return;message("Gerät gelöscht.");await loadAll();
+ const r=await adminAction("delete_device",{p_id:deviceId});if(r===null)return;
+ message("Gerät gelöscht.");await loadAll();
 }
 
 function renderVehicles(){
  renderStatusTiles();const box=$("vehicleList");box.replaceChildren();
  const q=$("vehicleSearch").value.toLowerCase(),pf=$("vehiclePersonFilter").value,tf=$("vehicleTypeFilter").value;
  let rows=vehicles.filter(v=>(activeVehicleStatus==="Verfügbar"?(v.status==="Verfügbar"||v.status==="Lager"):v.status===activeVehicleStatus)&&[v.vehicle_name,v.registration_number,v.vehicle_type,v.manufacturer,v.model,v.notes].some(x=>String(x||"").toLowerCase().includes(q))&&(!pf||String(v.assigned_person_id)===pf)&&(!tf||v.vehicle_type===tf));
- const sort=$("vehicleSort").value;rows.sort((a,b)=>sort==="registration"?(a.registration_number||"").localeCompare(b.registration_number||""):sort==="person"?personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id)):sort==="type"?(a.vehicle_type||"").localeCompare(b.vehicle_type||""):(a.vehicle_name||"").localeCompare(b.vehicle_name||""));
+ const sort=$("vehicleSort").value;
+ rows.sort((a,b)=>sort==="registration"?(a.registration_number||"").localeCompare(b.registration_number||""):sort==="person"?personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id)):sort==="type"?(a.vehicle_type||"").localeCompare(b.vehicle_type||""):(a.vehicle_name||"").localeCompare(b.vehicle_name||""));
  if(!rows.length){box.append(Object.assign(document.createElement("div"),{className:"empty",textContent:"Keine Fahrzeuge in diesem Status gefunden."}));return;}
  rows.forEach(v=>{
-  const c=document.createElement("div");c.className="card item-card "+statusClass(v.status,true);const h=document.createElement("h3");h.textContent=v.vehicle_name||"Fahrzeug";
+  const c=document.createElement("div");c.className="card item-card "+statusClass(v.status);
+  const h=document.createElement("h3");h.textContent=v.vehicle_name||"Fahrzeug";
   const info=document.createElement("p");info.className="muted";info.textContent=[v.registration_number,v.vehicle_type,v.manufacturer,v.model].filter(Boolean).join(" · ");
   const mileage=document.createElement("p");mileage.textContent="Kilometerstand: "+(v.mileage==null?"Nicht eingetragen":Number(v.mileage).toLocaleString("de-AT")+" km");
-  const inspection=document.createElement("p");inspection.textContent="Nächste Überprüfung: "+(v.inspection_due||"Nicht eingetragen");
+  const inspection=document.createElement("p");inspection.textContent="Pickerl gültig bis: "+(v.inspection_due||"Nicht eingetragen");
   const sl=document.createElement("label");sl.textContent="Status";let st;
   if(v.status==="Beschädigt"){st=document.createElement("p");st.className="tag";st.textContent="Beschädigt · Reparatur im Admin-Bereich abschließen";}
-  else{st=document.createElement("select");["Verfügbar","In Verwendung","Wartung fällig"].forEach(x=>st.add(new Option(x,x)));st.value=v.status==="Lager"?"Verfügbar":(v.status||"Verfügbar");st.addEventListener("change",()=>updateVehicle(v.id,{status:st.value}));}
-  const pl=document.createElement("label");pl.textContent="Fahrer zuweisen";const person=document.createElement("select");person.add(new Option("Niemand / zurückgeben",""));people.forEach(x=>person.add(new Option(x.name,x.id)));person.value=v.assigned_person_id||"";person.addEventListener("change",()=>updateVehicle(v.id,{assigned_person_id:person.value||null}));
+  else{
+   st=document.createElement("select");VEHICLE_STATUSES.filter(x=>x!=="Beschädigt").forEach(x=>st.add(new Option(x,x)));
+   st.value=v.status==="Lager"?"Verfügbar":(v.status||"Verfügbar");
+   st.addEventListener("change",()=>changeStatus("vehicles",v.id,st.value,true));
+  }
+  const pl=document.createElement("label");pl.textContent="Fahrer zuweisen";
+  const person=document.createElement("select");person.add(new Option("Niemand / zurückgeben",""));
+  people.forEach(x=>person.add(new Option(x.name,x.id)));person.value=v.assigned_person_id||"";
+  person.addEventListener("change",()=>changeAssignment("vehicles",v.id,person.value));
   const notes=document.createElement("p");notes.className="muted";notes.textContent=v.notes||"";
-  const actions=document.createElement("div");actions.className="actions";actions.append(btn("Schaden melden","light",()=>openDamageFor("vehicle",v.id)),btn("QR-Code anzeigen","light",()=>showQr("vehicle",v.id,v.vehicle_name||"Fahrzeug")));
+  const actions=document.createElement("div");actions.className="actions";
+  actions.append(btn("Schaden melden","light",()=>openDamageFor("vehicle",v.id)),btn("QR-Code anzeigen","light",()=>showQr("vehicle",v.id,v.vehicle_name||"Fahrzeug")));
   if(adminPin)actions.append(btn("Stammdaten bearbeiten","light",()=>editVehicle(v)),btn("Fahrzeug löschen","danger",()=>removeVehicle(v.id)));
   c.append(h,info,mileage,inspection,sl,st,pl,person,notes,actions);box.append(c);
  });
@@ -342,9 +578,7 @@ function renderVehicles(){
 function selectVehicleStatus(status){activeVehicleStatus=status;renderVehicles();}
 
 async function updateVehicle(id,values){
- if(values.status==="Beschädigt"){message("Beschädigt kann nur über eine Schadensmeldung gesetzt werden.");return;}
- let vehicleId;
- try{vehicleId=bigintId(id,"Fahrzeug-ID");}catch(err){message(err.message);return;}
+ let vehicleId;try{vehicleId=bigintId(id,"Fahrzeug-ID");}catch(err){message(err.message);return;}
  const {error}=await db.from("vehicles").update(values).eq("id",vehicleId).eq("company_id",companyId);
  if(error){message("Fahrzeugänderung fehlgeschlagen: "+error.message);await loadAll();return;}
  message("Fahrzeugänderung gespeichert.");await loadAll();
@@ -356,28 +590,50 @@ async function editVehicle(v){
  const manufacturer=prompt("Hersteller:",v.manufacturer||"");if(manufacturer===null)return;
  const model=prompt("Modell:",v.model||"");if(model===null)return;
  const mileageText=prompt("Kilometerstand:",v.mileage??"");if(mileageText===null)return;
- const inspection=prompt("Nächste Überprüfung (YYYY-MM-DD):",v.inspection_due||"");if(inspection===null)return;
+ const inspection=prompt("Pickerl gültig bis (YYYY-MM-DD):",v.inspection_due||"");if(inspection===null)return;
  const notes=prompt("Notizen:",v.notes||"");if(notes===null)return;
  const mileage=mileageText.trim()===""?null:Number(mileageText);
  if(mileage!==null&&(!Number.isInteger(mileage)||mileage<0)){message("Ungültiger Kilometerstand.");return;}
  let vehicleId;try{vehicleId=bigintId(v.id,"Fahrzeug-ID");}catch(err){message(err.message);return;}
  const {data,error}=await db.rpc("update_vehicle_master",{p_pin:adminPin,p_id:vehicleId,p_vehicle_name:name.trim(),p_registration_number:registration.trim(),p_vehicle_type:type.trim(),p_manufacturer:manufacturer.trim(),p_model:model.trim(),p_mileage:mileage,p_inspection_due:inspection.trim()||null,p_notes:notes.trim()});
- if(error){message("Fahrzeug konnte nicht bearbeitet werden: "+error.message);return;}if(!data){message("Änderung nicht möglich. PIN prüfen.");return;}message("Fahrzeugdaten gespeichert.");await loadAll();
+ if(error){message("Fahrzeug konnte nicht bearbeitet werden: "+error.message);return;}
+ if(!data){message("Änderung nicht möglich. PIN prüfen.");return;}
+ message("Fahrzeugdaten gespeichert.");await loadAll();
 }
 async function removeVehicle(id){
  if(!confirm("Fahrzeug wirklich endgültig löschen?"))return;
  let vehicleId;try{vehicleId=bigintId(id,"Fahrzeug-ID");}catch(err){message(err.message);return;}
- const r=await adminAction("delete_vehicle",{p_id:vehicleId});if(r===null)return;message("Fahrzeug gelöscht.");await loadAll();
+ const r=await adminAction("delete_vehicle",{p_id:vehicleId});if(r===null)return;
+ message("Fahrzeug gelöscht.");await loadAll();
 }
 
 function renderPeople(){
- const box=$("peopleList");box.replaceChildren();if(!people.length){box.textContent="Noch keine Personen angelegt.";return;}
- people.forEach(p=>{const c=card(p.name,"Mitarbeiter");c.append(btn("Bearbeiten","light",()=>editPerson(p)),btn("Löschen","danger",()=>removePerson(p.id)));box.append(c);});
+ const box=$("peopleList");box.replaceChildren();
+ if(!people.length){box.textContent="Noch keine Personen angelegt.";return;}
+ people.forEach(p=>{
+  const c=card(p.name,"Mitarbeiter");
+  c.append(btn("Bearbeiten","light",()=>editPerson(p)),btn("Löschen","danger",()=>removePerson(p.id)));
+  box.append(c);
+ });
 }
-async function editPerson(p){const name=prompt("Neuer Name:",p.name);if(name===null)return;const result=await adminAction("update_person",{p_id:p.id,p_name:name.trim()});if(result===null)return;message("Person geändert.");await loadAll();}
-async function removePerson(id){if(!confirm("Person wirklich löschen? Zugewiesene Geräte werden freigegeben."))return;const r=await adminAction("delete_person",{p_id:id});if(r===null)return;message("Person gelöscht.");await loadAll();}
+async function editPerson(p){
+ const name=prompt("Neuer Name:",p.name);if(name===null)return;
+ const result=await adminAction("update_person",{p_id:p.id,p_name:name.trim()});
+ if(result===null)return;message("Person geändert.");await loadAll();
+}
+async function removePerson(id){
+ if(!confirm("Person wirklich löschen? Zugewiesene Geräte werden freigegeben."))return;
+ const r=await adminAction("delete_person",{p_id:id});if(r===null)return;
+ if(String(localStorage.getItem(personStorageKey()))===String(id))localStorage.removeItem(personStorageKey());
+ message("Person gelöscht.");await loadAll();
+}
+
 function updateDropdowns(){
- const fill=(id,items,placeholder)=>{const el=$(id),old=el.value;el.replaceChildren(new Option(placeholder,""));items.forEach(x=>el.add(new Option(x.device_name||x.vehicle_name,x.id)));if(items.some(x=>String(x.id)===old))el.value=old;};
+ const fill=(id,items,placeholder)=>{
+  const el=$(id),old=el.value;el.replaceChildren(new Option(placeholder,""));
+  items.forEach(x=>el.add(new Option(x.device_name||x.vehicle_name,x.id)));
+  if(items.some(x=>String(x.id)===old))el.value=old;
+ };
  fill("maintenanceDevice",devices,"Gerät auswählen");updateDamageTarget();
 }
 function updateDamageTarget(){
@@ -386,12 +642,26 @@ function updateDamageTarget(){
  items.forEach(x=>el.add(new Option((x.device_name||x.vehicle_name)+(x.device_number?" · "+x.device_number:"")+(x.registration_number?" · "+x.registration_number:""),x.id)));
  if(items.some(x=>String(x.id)===old))el.value=old;
 }
-function openDamageFor(type,id){$("damageTargetType").value=type;updateDamageTarget();$("damageTarget").value=String(id);navigate("damage");$("damageReporter").focus();}
-function renderMaintenance(){
- const box=$("maintenanceList");box.replaceChildren();if(!maintenanceItems.length){box.textContent="Noch keine Wartung eingetragen.";return;}
- maintenanceItems.forEach(x=>{const d=devices.find(y=>String(y.id)===String(x.device_id));const c=card(d?.device_name||"Gerät",x.description+(x.due_date?" · Fällig: "+x.due_date:""));const st=document.createElement("p");st.textContent=x.completed?"Erledigt":"Offen";c.append(st);if(!x.completed)c.append(btn("Als erledigt markieren","light",()=>completeMaintenance(x.id)));box.append(c);});
+function openDamageFor(type,id){
+ $("damageTargetType").value=type;updateDamageTarget();$("damageTarget").value=String(id);
+ navigate("damage");$("damageReporter").focus();
 }
-async function completeMaintenance(id){const {error}=await db.from("maintenance").update({completed:true}).eq("id",id).eq("company_id",companyId);if(error)message("Fehler: "+error.message);else{message("Wartung erledigt.");await loadAll();}}
+function renderMaintenance(){
+ const box=$("maintenanceList");box.replaceChildren();
+ if(!maintenanceItems.length){box.textContent="Noch keine Wartung eingetragen.";return;}
+ maintenanceItems.forEach(x=>{
+  const d=devices.find(y=>String(y.id)===String(x.device_id));
+  const c=card(d?.device_name||"Gerät",x.description+(x.due_date?" · Fällig: "+x.due_date:""));
+  const st=document.createElement("p");st.textContent=x.completed?"Erledigt":"Offen";c.append(st);
+  if(!x.completed)c.append(btn("Als erledigt markieren","light",()=>completeMaintenance(x.id)));
+  box.append(c);
+ });
+}
+async function completeMaintenance(id){
+ const {error}=await db.from("maintenance").update({completed:true}).eq("id",id).eq("company_id",companyId);
+ if(error)message("Fehler: "+error.message);else{message("Wartung erledigt.");await loadAll();}
+}
+
 async function renderDamage(){
  const box=$("adminDamageList");if(!box)return;box.replaceChildren();
  if(!adminPin){box.textContent="Administration mit PIN öffnen, um Schäden zu sehen.";return;}
@@ -411,26 +681,17 @@ async function renderDamage(){
   c.append(btn("Als repariert abschließen","danger",()=>closeDamage(item.id)));box.append(c);
  }
 }
-
 async function closeDamage(rawId){
  if(!adminPin){message("Bitte zuerst Administration mit Admin-PIN öffnen.");return;}
  const damageId=String(rawId||"").trim();
  const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
- if(!uuidPattern.test(damageId)){
-  message("Ungültige Schadensmeldungs-ID. Erwartet wird die UUID aus damage_reports.id.");
-  return;
- }
+ if(!uuidPattern.test(damageId)){message("Ungültige Schadensmeldungs-ID.");return;}
  if(!confirm("Schadensmeldung als repariert abschließen? Der Status wird auf Lager bzw. Verfügbar gesetzt."))return;
-
- // Hier wird absichtlich die UUID der Schadensmeldung übergeben.
- // Die SQL-Funktion ermittelt daraus die BIGINT-Geräte- oder Fahrzeug-ID.
  const {data,error}=await db.rpc("close_damage_report",{p_pin:adminPin,p_damage_id:damageId});
  if(error){message("Schaden konnte nicht abgeschlossen werden: "+error.message);return;}
  if(data!==true){message("Schadensmeldung nicht gefunden oder bereits abgeschlossen.");return;}
- message("Schaden abgeschlossen. Status wurde zurückgesetzt.");
- await loadAll();
+ message("Schaden abgeschlossen. Status wurde zurückgesetzt.");await loadAll();
 }
-
 async function showQr(type,id,name){
  let targetId;
  try{targetId=bigintId(id,type==="device"?"Geräte-ID":"Fahrzeug-ID");}
@@ -441,7 +702,6 @@ async function showQr(type,id,name){
  try{$("qrImage").src=await QRCode.toDataURL(url.toString(),{width:500,margin:2});$("qrModal").classList.remove("hidden");}
  catch(err){message("QR-Code konnte nicht erstellt werden: "+err.message);}
 }
-
 async function compressImage(file){
  const image=await new Promise((resolve,reject)=>{
   const url=URL.createObjectURL(file);const img=new Image();
@@ -449,17 +709,35 @@ async function compressImage(file){
   img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Foto konnte nicht gelesen werden."));};
   img.src=url;
  });
- const max=1400,scale=Math.min(1,max/Math.max(image.width,image.height)),w=Math.round(image.width*scale),h=Math.round(image.height*scale);
- const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;canvas.getContext("2d").drawImage(image,0,0,w,h);
+ const max=1400,scale=Math.min(1,max/Math.max(image.width,image.height));
+ const w=Math.round(image.width*scale),h=Math.round(image.height*scale);
+ const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+ canvas.getContext("2d").drawImage(image,0,0,w,h);
  return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("Foto konnte nicht komprimiert werden.")),"image/jpeg",0.78));
 }
 
 document.querySelectorAll("[data-install]").forEach(b=>b.addEventListener("click",()=>$("installModal").classList.remove("hidden")));
 $("installClose").addEventListener("click",()=>$("installModal").classList.add("hidden"));
 $("installModal").addEventListener("click",e=>{if(e.target===$("installModal"))$("installModal").classList.add("hidden");});
-$("registerToggle").addEventListener("click",()=>{const area=$("registerArea");area.classList.toggle("hidden");$("registerToggle").textContent=area.classList.contains("hidden")?"Neue Firma registrieren":"Registrierung schließen";});
+$("registerToggle").addEventListener("click",()=>{
+ const area=$("registerArea");area.classList.toggle("hidden");
+ $("registerToggle").textContent=area.classList.contains("hidden")?"Neue Firma registrieren":"Registrierung schließen";
+});
 $("qrClose").addEventListener("click",()=>$("qrModal").classList.add("hidden"));
 $("qrModal").addEventListener("click",e=>{if(e.target===$("qrModal"))$("qrModal").classList.add("hidden");});
+$("myNameButton").addEventListener("click",()=>openNamePicker(false));
+$("saveMyName").addEventListener("click",saveMyName);
+$("cancelMyName").addEventListener("click",closeNamePicker);
+
+$("takePhoto").addEventListener("click",()=>$("damageCamera").click());
+$("choosePhoto").addEventListener("click",()=>$("damageGallery").click());
+function selectedDamageFile(){return $("damageCamera").files[0]||$("damageGallery").files[0]||null;}
+function photoChanged(){
+ const f=selectedDamageFile();
+ $("photoSelected").textContent=f?"Ausgewählt: "+f.name:"Kein Foto ausgewählt.";
+}
+$("damageCamera").addEventListener("change",photoChanged);
+$("damageGallery").addEventListener("change",photoChanged);
 
 function navigate(page){
  document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));
@@ -467,6 +745,13 @@ function navigate(page){
  const titles={dashboard:"Dashboard",devices:"Geräte",vehicles:"Fahrzeuge",maintenance:"Wartung",damage:"Schäden",admin:"Administration"};
  $("companyHeading").textContent=titles[page]||"GerätePass";
 }
+function openAdminTab(tab){
+ document.querySelectorAll(".admin-content").forEach(x=>x.classList.add("hidden"));
+ document.querySelectorAll("[data-admin-tab]").forEach(x=>x.classList.toggle("active",x.dataset.adminTab===tab));
+ $("admin-"+tab).classList.remove("hidden");
+ if(tab==="damage")renderDamage();
+}
+document.querySelectorAll("[data-admin-tab]").forEach(b=>b.addEventListener("click",()=>openAdminTab(b.dataset.adminTab)));
 document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.page)));
 document.querySelectorAll("[data-device-status]").forEach(b=>b.addEventListener("click",()=>selectDeviceStatus(b.dataset.deviceStatus)));
 document.querySelectorAll("[data-vehicle-status]").forEach(b=>b.addEventListener("click",()=>selectVehicleStatus(b.dataset.vehicleStatus)));
@@ -477,8 +762,10 @@ document.querySelectorAll("[data-toggle]").forEach(b=>b.addEventListener("click"
 }));
 
 $("adminOpen").addEventListener("click",async()=>{
- const pin=askPin();if(pin===null)return;if(!await verifyPin(pin))return;
- adminPin=pin;await loadAll();renderDevices();renderVehicles();navigate("admin");message("Administration freigeschaltet.");
+ const pin=askPin();if(pin===null)return;
+ if(!await verifyPin(pin))return;
+ adminPin=pin;await loadAll();navigate("admin");openAdminTab("device");
+ message("Administration freigeschaltet.");
 });
 
 $("loginForm").addEventListener("submit",async e=>{
@@ -487,7 +774,6 @@ $("loginForm").addEventListener("submit",async e=>{
  if(error){message("Anmeldung fehlgeschlagen: "+error.message);return;}
  await syncUser(data.user);
 });
-
 $("registerForm").addEventListener("submit",async e=>{
  e.preventDefault();message("Konto wird erstellt …");
  const {data,error}=await db.auth.signUp({email:$("regEmail").value.trim(),password:$("regPassword").value});
@@ -495,7 +781,6 @@ $("registerForm").addEventListener("submit",async e=>{
  if(data.session)await syncUser(data.user);
  else message("Konto erstellt. Bitte gegebenenfalls E-Mail bestätigen und danach anmelden.");
 });
-
 $("setupForm").addEventListener("submit",async e=>{
  e.preventDefault();const pin=$("adminPinSetup").value;
  if(!/^[0-9]{4}$/.test(pin)){message("Bitte einen vierstelligen PIN eingeben.");return;}
@@ -505,7 +790,9 @@ $("setupForm").addEventListener("submit",async e=>{
 });
 
 $("deviceForm").addEventListener("submit",async e=>{
- e.preventDefault();const pin=adminPin||askPin();if(pin===null)return;if(!adminPin&&!await verifyPin(pin))return;
+ e.preventDefault();
+ const pin=adminPin||askPin();if(pin===null)return;
+ if(!adminPin&&!await verifyPin(pin))return;
  const {data,error}=await db.rpc("create_device",{
   p_pin:pin,p_device_name:$("deviceName").value.trim(),p_device_number:"GP-"+Date.now(),
   p_manufacturer:$("manufacturer").value.trim()||null,p_model:$("model").value.trim()||null,
@@ -514,23 +801,29 @@ $("deviceForm").addEventListener("submit",async e=>{
  });
  if(error){message("Gerät konnte nicht gespeichert werden: "+error.message);return;}
  if(!data){message("Gerät nicht gespeichert. PIN prüfen.");return;}
- let newDeviceId;try{newDeviceId=bigintId(data,"neue Geräte-ID");}
- catch(err){message("Gerät wurde angelegt, aber die Geräteart konnte nicht zugewiesen werden: "+err.message);await loadAll();return;}
+ let newDeviceId;
+ try{newDeviceId=bigintId(data,"neue Geräte-ID");}
+ catch(err){message("Gerät wurde angelegt, aber die ID konnte nicht erkannt werden: "+err.message);await loadAll();return;}
  const {data:typeData,error:typeError}=await db.rpc("set_device_type_admin",{p_pin:pin,p_id:newDeviceId,p_device_type:$("deviceType").value.trim()});
- if(typeError||!typeData)message("Gerät angelegt, Geräteart aber nicht gespeichert: "+(typeError?.message||"PIN prüfen."));
+ if(typeError||!typeData){message("Gerät angelegt, Geräteart aber nicht gespeichert: "+(typeError?.message||"PIN prüfen."));}
+ const due=$("deviceMaintenanceDue").value||null;
+ const {data:dueData,error:dueError}=await db.rpc("set_device_maintenance_due",{p_pin:pin,p_id:newDeviceId,p_due_date:due});
+ if(dueError||dueData!==true){message("Gerät angelegt, Prüfdatum aber nicht gespeichert: "+(dueError?.message||"Datenbankfunktion prüfen."));}
  else message("Gerät erfolgreich angelegt.");
  e.target.reset();await loadAll();
 });
 
 $("vehicleForm").addEventListener("submit",async e=>{
- e.preventDefault();const pin=adminPin||askPin();if(pin===null)return;if(!adminPin&&!await verifyPin(pin))return;
+ e.preventDefault();const pin=adminPin||askPin();if(pin===null)return;
+ if(!adminPin&&!await verifyPin(pin))return;
  const m=$("vehicleMileage").value.trim(),mileage=m===""?null:Number(m);
  if(mileage!==null&&(!Number.isInteger(mileage)||mileage<0)){message("Bitte gültigen Kilometerstand eingeben.");return;}
  const {data,error}=await db.rpc("create_vehicle",{
-  p_pin:pin,p_vehicle_name:$("vehicleName").value.trim(),p_registration_number:$("vehicleRegistration").value.trim(),
+  p_pin:pin,p_vehicle_name:$("vehicleName").value.trim(),
+  p_registration_number:$("vehicleRegistration").value.trim(),
   p_vehicle_type:$("vehicleType").value.trim(),p_manufacturer:$("vehicleManufacturer").value.trim(),
-  p_model:$("vehicleModel").value.trim(),p_mileage:mileage,p_inspection_due:$("vehicleInspection").value||null,
-  p_notes:$("vehicleNotes").value.trim()
+  p_model:$("vehicleModel").value.trim(),p_mileage:mileage,
+  p_inspection_due:$("vehicleInspection").value||null,p_notes:$("vehicleNotes").value.trim()
  });
  if(error){message("Fahrzeug konnte nicht gespeichert werden: "+error.message);return;}
  if(!data){message("Fahrzeug nicht gespeichert. PIN prüfen.");return;}
@@ -538,17 +831,19 @@ $("vehicleForm").addEventListener("submit",async e=>{
 });
 
 $("personForm").addEventListener("submit",async e=>{
- e.preventDefault();const r=await adminAction("create_person",{p_name:$("personName").value.trim()});
- if(r===null)return;e.target.reset();message("Person erfolgreich angelegt.");await loadAll();
+ e.preventDefault();
+ const r=await adminAction("create_person",{p_name:$("personName").value.trim()});
+ if(r===null)return;
+ e.target.reset();message("Person erfolgreich angelegt.");await loadAll();
 });
-
 $("maintenanceForm").addEventListener("submit",async e=>{
  e.preventDefault();const rawId=$("maintenanceDevice").value;
  if(!rawId){message("Bitte ein Gerät auswählen.");return;}
  let deviceId;try{deviceId=bigintId(rawId,"Geräte-ID");}catch(err){message(err.message);return;}
  const {error}=await db.from("maintenance").insert({
   company_id:companyId,device_id:deviceId,
-  description:$("maintenanceDescription").value.trim(),due_date:$("maintenanceDate").value||null
+  description:$("maintenanceDescription").value.trim(),
+  due_date:$("maintenanceDate").value||null
  });
  if(error){message("Wartung konnte nicht eingetragen werden: "+error.message);return;}
  e.target.reset();message("Wartung eingetragen.");await loadAll();
@@ -558,16 +853,15 @@ $("damageTargetType").addEventListener("change",updateDamageTarget);
 $("damageForm").addEventListener("submit",async e=>{
  e.preventDefault();
  const type=$("damageTargetType").value,rawId=$("damageTarget").value;
- const reporter=$("damageReporter").value.trim(),description=$("damageDescription").value.trim(),file=$("damagePhoto").files[0];
+ const reporter=$("damageReporter").value.trim();
+ const description=$("damageDescription").value.trim();
+ const file=selectedDamageFile();
  if(!rawId){message("Bitte ein Gerät oder Fahrzeug auswählen.");return;}
  if(!reporter){message("Bitte den Namen des Meldenden eintragen.");$("damageReporter").focus();return;}
  if(!description){message("Bitte den Schaden beschreiben.");return;}
-
- // Ziel-ID muss BIGINT sein. Eine UUID wird hier ausdrücklich abgewiesen.
  let targetId;
  try{targetId=bigintId(rawId,type==="device"?"Geräte-ID":"Fahrzeug-ID");}
  catch(err){message(err.message);return;}
-
  let photoPath=null;
  if(file){
   try{
@@ -578,7 +872,6 @@ $("damageForm").addEventListener("submit",async e=>{
    if(uploadError){message("Foto-Upload fehlgeschlagen: "+uploadError.message);return;}
   }catch(err){message(err.message||"Foto konnte nicht verarbeitet werden.");return;}
  }
-
  const payload={
   company_id:companyId,
   device_id:type==="device"?targetId:null,
@@ -593,22 +886,24 @@ $("damageForm").addEventListener("submit",async e=>{
   if(photoPath)await db.storage.from("damage-photos").remove([photoPath]);
   message("Schaden konnte nicht gemeldet werden: "+error.message);return;
  }
-
- const statusTable=type==="device"?"devices":"vehicles";
- const {error:statusError}=await db.from(statusTable).update({status:"Beschädigt"}).eq("id",targetId).eq("company_id",companyId);
- e.target.reset();updateDamageTarget();
- if(statusError)message("Schaden gemeldet, aber Status konnte nicht automatisch geändert werden: "+statusError.message);
+ const table=type==="device"?"devices":"vehicles";
+ const {error:statusError}=await db.from(table).update({status:"Beschädigt",assigned_person_id:null}).eq("id",targetId).eq("company_id",companyId);
+ e.target.reset();$("photoSelected").textContent="Kein Foto ausgewählt.";updateDamageTarget();
+ if(statusError)message("Schaden gemeldet, aber Status konnte nicht geändert werden: "+statusError.message);
  else message("Schaden erfolgreich gemeldet. Status wurde auf Beschädigt gesetzt.");
  await loadAll();
 });
 
-["deviceSearch","devicePersonFilter","deviceTypeFilter","deviceSort"].forEach(id=>$ (id).addEventListener(id==="deviceSearch"?"input":"change",renderDevices));
-["vehicleSearch","vehiclePersonFilter","vehicleTypeFilter","vehicleSort"].forEach(id=>$ (id).addEventListener(id==="vehicleSearch"?"input":"change",renderVehicles));
+["deviceSearch","devicePersonFilter","deviceTypeFilter","deviceSort"].forEach(id=>$(id).addEventListener(id==="deviceSearch"?"input":"change",renderDevices));
+["vehicleSearch","vehiclePersonFilter","vehicleTypeFilter","vehicleSort"].forEach(id=>$(id).addEventListener(id==="vehicleSearch"?"input":"change",renderVehicles));
 
 $("logout").addEventListener("click",async()=>{adminPin=null;await db.auth.signOut();});
 db.auth.onAuthStateChange((event,session)=>{
- if(event==="SIGNED_OUT"){activeUserId=null;currentUser=null;companyId=null;adminPin=null;showSection("authSection");}
- else if(event==="SIGNED_IN"&&session?.user){queueMicrotask(()=>syncUser(session.user));}
+ if(event==="SIGNED_OUT"){
+  activeUserId=null;currentUser=null;companyId=null;adminPin=null;showSection("authSection");
+ }else if(event==="SIGNED_IN"&&session?.user){
+  queueMicrotask(()=>syncUser(session.user));
+ }
 });
 
 const {data:{session}}=await db.auth.getSession();
