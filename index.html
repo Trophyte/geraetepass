@@ -3,27 +3,25 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GerätePass</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f3f5f8;color:#202938}
 header{background:#172b46;color:white;padding:22px}
 header h1{margin:0;font-size:25px}
-header p{margin:7px 0 0;color:#bdc9d8}
-main{max-width:1000px;margin:auto;padding:22px}
-h2{margin-top:28px}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.card{background:white;padding:18px;border-radius:12px;box-shadow:0 2px 8px #0000000a}
-.number{font-size:30px;font-weight:bold;margin-top:8px}
-button{background:#1769aa;color:white;border:0;border-radius:8px;padding:12px 16px;font-weight:bold;cursor:pointer}
-input{padding:12px;border:1px solid #ccd3dd;border-radius:8px;width:100%;margin:7px 0}
-.device{margin-top:12px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+header p{color:#bdc9d8;margin-bottom:0}
+main{max-width:900px;margin:auto;padding:20px}
+.card{background:white;padding:18px;border-radius:12px;margin:12px 0;box-shadow:0 2px 8px #0000000a}
+input,select{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccd3dd;border-radius:8px;font-size:16px}
+button{background:#1769aa;color:white;border:0;border-radius:8px;padding:12px 16px;font-weight:bold;margin:4px 4px 4px 0}
+.delete{background:#b42318}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.number{font-size:28px;font-weight:bold;margin-top:8px}
 small{color:#64748b}
-.status{font-size:12px;color:#18794e;background:#e6f5ed;padding:6px 9px;border-radius:20px}
-.toolbar{display:flex;gap:10px;margin-top:15px}
-.toolbar input{flex:1;min-width:0}
-@media(min-width:650px){.stats{grid-template-columns:repeat(4,1fr)}}
+.hidden{display:none}
+#message{padding:10px;color:#1769aa}
+.device{border-left:4px solid #1769aa}
 </style>
 </head>
 <body>
@@ -31,47 +29,233 @@ small{color:#64748b}
 <h1>GerätePass</h1>
 <p>Deine digitale Geräteverwaltung</p>
 </header>
+
 <main>
+<section id="login" class="card">
+<h2>Anmelden</h2>
+<p>Bitte melde dich mit deinem GerätePass-Konto an.</p>
+<form id="loginForm">
+<label>E-Mail-Adresse</label>
+<input id="email" type="email" required>
+<label>Passwort</label>
+<input id="password" type="password" required>
+<button type="submit">Anmelden</button>
+</form>
+</section>
+
+<section id="app" class="hidden">
+<div style="display:flex;justify-content:space-between;align-items:center">
 <h2>Dashboard</h2>
+<button id="logout">Abmelden</button>
+</div>
+
 <div class="stats">
-<div class="card">Geräte gesamt<div class="number" id="total">2</div></div>
-<div class="card">In Verwendung<div class="number" id="active">2</div></div>
+<div class="card">Geräte gesamt<div class="number" id="total">0</div></div>
+<div class="card">In Verwendung<div class="number" id="active">0</div></div>
 <div class="card">Beschädigt<div class="number" id="damaged">0</div></div>
 <div class="card">Wartung fällig<div class="number" id="maintenance">0</div></div>
 </div>
-<h2>Geräteverwaltung</h2>
-<div class="toolbar">
-<input id="search" placeholder="Gerät suchen..." oninput="render()">
-<button onclick="addDevice()">+ Gerät</button>
-</div>
+
+<h2>Neues Gerät</h2>
+<form id="deviceForm" class="card">
+<label>Gerätename *</label>
+<input id="deviceName" required placeholder="z. B. Akkuschrauber">
+<label>Hersteller</label>
+<input id="manufacturer" placeholder="z. B. Bosch">
+<label>Modell</label>
+<input id="model" placeholder="Modell">
+<label>Standort</label>
+<input id="location" placeholder="z. B. Lager">
+<label>Zugewiesener Mitarbeiter</label>
+<input id="assigned" placeholder="Name">
+<label>Status</label>
+<select id="status">
+<option>In Verwendung</option>
+<option>Beschädigt</option>
+<option>Wartung fällig</option>
+<option>Außer Betrieb</option>
+</select>
+<button type="submit">Gerät speichern</button>
+</form>
+
+<h2>Geräteübersicht</h2>
+<input id="search" placeholder="Gerät suchen...">
 <div id="devices"></div>
+</section>
+<div id="message"></div>
 </main>
-<script>
-let devices=[
-{name:"Akkuschrauber Bosch",id:"GP-001",status:"In Verwendung"},
-{name:"Winkelschleifer Makita",id:"GP-002",status:"In Verwendung"}
-];
-function render(){
-let q=document.getElementById("search").value.toLowerCase();
-let list=devices.filter(d=>(d.name+" "+d.id).toLowerCase().includes(q));
-document.getElementById("devices").innerHTML=list.map(d=>`
-<div class="card device">
-<div><strong>${d.name}</strong><br><small>${d.id}</small></div>
-<span class="status">${d.status}</span>
-</div>`).join("")||"<p>Keine Geräte gefunden.</p>";
-document.getElementById("total").textContent=devices.length;
-document.getElementById("active").textContent=devices.filter(d=>d.status==="In Verwendung").length;
-document.getElementById("damaged").textContent=devices.filter(d=>d.status==="Beschädigt").length;
-document.getElementById("maintenance").textContent=devices.filter(d=>d.status==="Wartung fällig").length;
+
+<script type="module">
+import { createClient } from
+"https://esm.sh/@supabase/supabase-js@2";
+
+// HIER DEINE BEIDEN SUPABASE-ANGABEN EINTRAGEN:
+const SUPABASE_URL = "DEINE_API_URL";
+const SUPABASE_KEY = "DEIN_PUBLISHABLE_KEY";
+
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const login = document.getElementById("login");
+const app = document.getElementById("app");
+const message = document.getElementById("message");
+let devices = [];
+
+function showMessage(text) {
+  message.textContent = text;
 }
-function addDevice(){
-let name=prompt("Wie heißt das neue Gerät?");
-if(!name||!name.trim())return;
-let id="GP-"+String(devices.length+1).padStart(3,"0");
-devices.push({name:name.trim(),id,status:"In Verwendung"});
-render();
+
+function showApp(user) {
+  login.classList.toggle("hidden", !!user);
+  app.classList.toggle("hidden", !user);
 }
-render();
+
+async function loadDevices() {
+  const { data, error } = await db
+    .from("devices")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    showMessage("Fehler beim Laden: " + error.message);
+    return;
+  }
+
+  devices = data || [];
+  render();
+}
+
+function render() {
+  const q = document.getElementById("search").value.toLowerCase();
+  const list = devices.filter(d =>
+    [d.device_name, d.device_number, d.manufacturer, d.model]
+      .some(v => (v || "").toLowerCase().includes(q))
+  );
+
+  document.getElementById("total").textContent = devices.length;
+  document.getElementById("active").textContent =
+    devices.filter(d => d.status === "In Verwendung").length;
+  document.getElementById("damaged").textContent =
+    devices.filter(d => d.status === "Beschädigt").length;
+  document.getElementById("maintenance").textContent =
+    devices.filter(d => d.status === "Wartung fällig").length;
+
+  const container = document.getElementById("devices");
+  container.replaceChildren();
+
+  if (!list.length) {
+    container.textContent = "Noch keine Geräte vorhanden.";
+    return;
+  }
+
+  list.forEach(d => {
+    const card = document.createElement("div");
+    card.className = "card device";
+
+    const name = document.createElement("strong");
+    name.textContent = d.device_name;
+
+    const details = document.createElement("p");
+    details.textContent =
+      [d.device_number, d.manufacturer, d.model, d.location, d.assigned_to]
+      .filter(Boolean).join(" · ");
+
+    const status = document.createElement("select");
+    ["In Verwendung","Beschädigt","Wartung fällig","Außer Betrieb"]
+      .forEach(s => {
+        const option = document.createElement("option");
+        option.value = s;
+        option.textContent = s;
+        status.appendChild(option);
+      });
+    status.value = d.status;
+    status.addEventListener("change", () => updateStatus(d.id, status.value));
+
+    const remove = document.createElement("button");
+    remove.className = "delete";
+    remove.textContent = "Löschen";
+    remove.addEventListener("click", () => deleteDevice(d.id));
+
+    card.append(name, details, status, remove);
+    container.appendChild(card);
+  });
+}
+
+async function updateStatus(id, status) {
+  const { error } = await db.from("devices")
+    .update({ status }).eq("id", id);
+  if (error) showMessage(error.message);
+  else {
+    showMessage("Status gespeichert.");
+    await loadDevices();
+  }
+}
+
+async function deleteDevice(id) {
+  if (!confirm("Gerät wirklich löschen?")) return;
+  const { error } = await db.from("devices").delete().eq("id", id);
+  if (error) showMessage(error.message);
+  else {
+    showMessage("Gerät gelöscht.");
+    await loadDevices();
+  }
+}
+
+document.getElementById("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  showMessage("Anmeldung läuft...");
+  const { error } = await db.auth.signInWithPassword({
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value
+  });
+  if (error) showMessage("Anmeldung fehlgeschlagen: " + error.message);
+});
+
+document.getElementById("logout").addEventListener("click", async () => {
+  await db.auth.signOut();
+});
+
+document.getElementById("deviceForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) {
+    showMessage("Bitte zuerst anmelden.");
+    return;
+  }
+
+  const device = {
+    user_id: user.id,
+    device_name: document.getElementById("deviceName").value.trim(),
+    device_number: "GP-" + Date.now(),
+    manufacturer: document.getElementById("manufacturer").value.trim(),
+    model: document.getElementById("model").value.trim(),
+    location: document.getElementById("location").value.trim(),
+    assigned_to: document.getElementById("assigned").value.trim(),
+    status: document.getElementById("status").value
+  };
+
+  const { error } = await db.from("devices").insert(device);
+
+  if (error) {
+    showMessage("Speichern fehlgeschlagen: " + error.message);
+    return;
+  }
+
+  e.target.reset();
+  showMessage("Gerät erfolgreich gespeichert.");
+  await loadDevices();
+});
+
+document.getElementById("search").addEventListener("input", render);
+
+db.auth.onAuthStateChange(async (event, session) => {
+  showApp(session?.user);
+  if (session?.user) await loadDevices();
+});
+
+const { data: { session } } = await db.auth.getSession();
+showApp(session?.user);
+if (session?.user) await loadDevices();
 </script>
 </body>
 </html>
