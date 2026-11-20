@@ -678,12 +678,7 @@ function renderDevices(){
    st=document.createElement("select");
    const allowedStatuses=d.status==="Wartung fällig"
  ? ["In Werkstatt / Abgegeben"]
- const allowedStatuses=d.status==="Wartung fällig"
- ? ["In Werkstatt / Abgegeben"]
  : DEVICE_STATUSES.filter(x=>x!=="Beschädigt");
-
-allowedStatuses.forEach(x=>st.add(new Option(x,x)));
-
 allowedStatuses.forEach(x=>st.add(new Option(x,x)));
    st.value=d.status||"Lager";
    st.addEventListener("change",()=>changeStatus("devices",d.id,st.value,false));
@@ -809,12 +804,7 @@ function renderVehicles(){
    st=document.createElement("select");
    const allowedStatuses=v.status==="Wartung fällig"
  ? ["In Werkstatt / Abgegeben"]
- const allowedStatuses=v.status==="Wartung fällig"
- ? ["In Werkstatt / Abgegeben"]
  : VEHICLE_STATUSES.filter(x=>x!=="Beschädigt");
-
-allowedStatuses.forEach(x=>st.add(new Option(x,x)));
-
 allowedStatuses.forEach(x=>st.add(new Option(x,x)));
    st.value=v.status==="Lager"?"Verfügbar":(v.status||"Verfügbar");
    st.addEventListener("change",()=>changeStatus("vehicles",v.id,st.value,true));
@@ -852,6 +842,8 @@ async function editVehicle(v){
  const name=prompt("Fahrzeugname:",v.vehicle_name||"");if(name===null)return;
  const registration=prompt("Kennzeichen:",v.registration_number||"");if(registration===null)return;
  const type=prompt("Fahrzeugart:",v.vehicle_type||"");if(type===null)return;
+ const manufacturer=prompt("Hersteller:",v.manufacturer||"");if(manufacturer===null)return;
+ const model=prompt("Modell:",v.model||"");if(model===null)return;Fahrzeugart:",v.vehicle_type||"");if(type===null)return;
  const manufacturer=prompt("Hersteller:",v.manufacturer||"");if(manufacturer===null)return;
  const model=prompt("Modell:",v.model||"");if(model===null)return;
  const mileageText=prompt("Kilometerstand:",v.mileage??"");if(mileageText===null)return;
