@@ -13,7 +13,7 @@ body{margin:0;font-family:Arial,sans-serif;background:#f3f5f8;color:#202938}
 header{background:#172b46;color:white;padding:20px}
 header h1{margin:0;font-size:26px}
 header p{color:#bdc9d8;margin:6px 0 0}
-main{max-width:1050px;margin:auto;padding:16px}
+main{max-width:1100px;margin:auto;padding:16px}
 .card{background:white;padding:18px;border-radius:13px;margin:12px 0;box-shadow:0 2px 9px #0000000a}
 input,select,textarea{width:100%;padding:12px;margin:6px 0 14px;border:1px solid #ccd3dd;border-radius:8px;font-size:16px;background:white}
 textarea{min-height:85px}
@@ -21,14 +21,17 @@ button{background:#1769aa;color:white;border:0;border-radius:8px;padding:12px 16
 button.secondary{background:#64748b}
 button.danger{background:#b42318}
 button.light{background:#e8eef5;color:#172b46}
-label{font-size:14px;font-weight:bold}
+button:disabled{opacity:.5}
+label{font-size:14px;font-weight:bold;display:block}
 .hidden{display:none!important}
 #message{padding:10px;color:#1769aa;white-space:pre-wrap}
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.stat{background:white;padding:16px;border-radius:12px}
-.number{font-size:27px;font-weight:bold;margin-top:8px}
+.stat{background:white;padding:16px;border-radius:12px;border:1px solid #e1e7ef;text-align:left;width:100%;margin:0;color:#202938}
+.stat.selected{border:2px solid #1769aa;background:#edf5fc}
+.stat .number{font-size:27px;font-weight:bold;margin-top:8px}
+.stat small{display:block;color:#64748b;margin-top:5px}
 .menu{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0}
-.menu button{min-height:78px;font-size:16px;background:white;color:#172b46;border:1px solid #dce3eb}
+.menu button{min-height:65px;font-size:15px;background:white;color:#172b46;border:1px solid #dce3eb}
 .menu button.selected{background:#1769aa;color:white}
 .device{border-left:4px solid #1769aa}
 .device h3{margin:0 0 8px}
@@ -37,9 +40,14 @@ label{font-size:14px;font-weight:bold}
 .actions{margin-top:10px}
 .qr{width:150px;height:150px;object-fit:contain;display:block;margin:12px 0}
 hr{border:0;border-top:1px solid #e5eaf0;margin:18px 0}
+.filters{display:grid;grid-template-columns:1fr;gap:4px}
+.filter-title{font-weight:bold;margin:8px 0 0}
+.vehicle{border-left:4px solid #16836a}
+.section-heading{margin-top:24px}
 @media(min-width:700px){
-.stats{grid-template-columns:repeat(4,1fr)}
-.menu{grid-template-columns:repeat(3,1fr)}
+.stats{grid-template-columns:repeat(5,1fr)}
+.menu{grid-template-columns:repeat(4,1fr)}
+.filters{grid-template-columns:repeat(3,1fr);gap:10px}
 }
 </style>
 </head>
@@ -47,12 +55,11 @@ hr{border:0;border-top:1px solid #e5eaf0;margin:18px 0}
 <body>
 <header>
 <h1>GerätePass</h1>
-<p>Deine digitale Geräteverwaltung</p>
+<p>Deine digitale Geräte- und Fahrzeugverwaltung</p>
 </header>
 
 <main>
 
-<!-- ANMELDUNG -->
 <section id="authSection" class="card hidden">
 <h2>Anmelden</h2>
 <p>Mit dem Firmenkonto anmelden.</p>
@@ -75,20 +82,18 @@ hr{border:0;border-top:1px solid #e5eaf0;margin:18px 0}
 </form>
 </section>
 
-<!-- FIRMA EINRICHTEN -->
 <section id="setupSection" class="card hidden">
 <h2>Firma einrichten</h2>
 <p>Dein Login ist angemeldet. Jetzt fehlen noch die Firmendaten.</p>
 <form id="setupForm">
 <label>Firmenname</label>
-<input id="companyName" required minlength="2" placeholder="z. B. Muster GmbH">
+<input id="companyName" required minlength="2">
 <label>Vierstelliger Admin-PIN</label>
-<input id="adminPinSetup" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required placeholder="1234">
+<input id="adminPinSetup" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required>
 <button type="submit">Firma einrichten</button>
 </form>
 </section>
 
-<!-- APP -->
 <section id="appSection" class="hidden">
 
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
@@ -103,48 +108,148 @@ hr{border:0;border-top:1px solid #e5eaf0;margin:18px 0}
 <button data-page="dashboard" class="selected">📊 Dashboard</button>
 <button data-page="devices">🧰 Geräte</button>
 <button data-page="people">👷 Personen</button>
+<button data-page="vehicles">🚗 Fahrzeuge</button>
 <button data-page="add">➕ Hinzufügen</button>
 <button data-page="maintenance">🔧 Wartung</button>
 <button data-page="damage">⚠️ Schäden</button>
 </nav>
 
-<!-- DASHBOARD -->
 <section id="page-dashboard" class="page">
 <h2>Übersicht</h2>
 <div class="stats">
-<div class="stat">Geräte gesamt<div class="number" id="total">0</div></div>
-<div class="stat">In Verwendung<div class="number" id="active">0</div></div>
-<div class="stat">Beschädigt<div class="number" id="damaged">0</div></div>
-<div class="stat">Wartung fällig<div class="number" id="maintenanceCount">0</div></div>
+<button class="stat" data-status="ALL">
+Gesamt Geräte
+<div class="number" id="total">0</div>
+<small>Alle Geräte anzeigen</small>
+</button>
+<button class="stat" data-status="In Verwendung">
+In Verwendung
+<div class="number" id="active">0</div>
+<small>Geräte anzeigen</small>
+</button>
+<button class="stat" data-status="Beschädigt">
+Beschädigt
+<div class="number" id="damaged">0</div>
+<small>Geräte anzeigen</small>
+</button>
+<button class="stat" data-status="Wartung fällig">
+Wartung fällig
+<div class="number" id="maintenanceCount">0</div>
+<small>Geräte anzeigen</small>
+</button>
+<button class="stat" data-status="Lager">
+Lager
+<div class="number" id="storage">0</div>
+<small>Geräte anzeigen</small>
+</button>
 </div>
+
+<div class="card">
+<h3>Fahrzeuge</h3>
+<p>Fahrzeuge gesamt: <strong id="vehicleTotal">0</strong></p>
+<button class="light" data-goto="vehicles">Fahrzeuge öffnen</button>
+</div>
+
 <div class="card">
 <h3>Willkommen bei GerätePass</h3>
-<p>Verwalte hier eure Geräte, Mitarbeiter, Schäden und Wartungen.</p>
-<p class="muted">Statusänderungen und Gerätezuweisungen benötigen keinen Admin-PIN.</p>
+<p>Verwalte hier eure Geräte, Mitarbeiter, Fahrzeuge, Schäden und Wartungen.</p>
+<p class="muted">Statusänderungen und Zuweisungen benötigen keinen Admin-PIN. Stammdatenänderungen sind geschützt.</p>
 </div>
 </section>
 
-<!-- GERÄTE -->
 <section id="page-devices" class="page hidden">
 <h2>Geräteübersicht</h2>
 <input id="deviceSearch" placeholder="Gerät suchen...">
+<div class="filters">
+<div>
+<label for="deviceStatusFilter">Status</label>
+<select id="deviceStatusFilter">
+<option value="">Alle Status</option>
+<option>In Verwendung</option>
+<option>Beschädigt</option>
+<option>Wartung fällig</option>
+<option>Lager</option>
+</select>
+</div>
+<div>
+<label for="devicePersonFilter">Mitarbeiter</label>
+<select id="devicePersonFilter">
+<option value="">Alle Mitarbeiter</option>
+</select>
+</div>
+<div>
+<label for="deviceTypeFilter">Geräteart</label>
+<select id="deviceTypeFilter">
+<option value="">Alle Gerätearten</option>
+</select>
+</div>
+<div>
+<label for="deviceSort">Sortieren nach</label>
+<select id="deviceSort">
+<option value="name">Name A–Z</option>
+<option value="name-desc">Name Z–A</option>
+<option value="person">Mitarbeiter A–Z</option>
+<option value="type">Geräteart A–Z</option>
+<option value="status">Status</option>
+</select>
+</div>
+</div>
 <div id="deviceList"></div>
 </section>
 
-<!-- PERSONEN -->
 <section id="page-people" class="page hidden">
 <h2>Personen</h2>
 <p class="muted">Mitarbeiter verwalten. Änderungen benötigen den Admin-PIN.</p>
 <div id="peopleList"></div>
 </section>
 
-<!-- HINZUFÜGEN -->
+<section id="page-vehicles" class="page hidden">
+<h2>Fahrzeugübersicht</h2>
+<input id="vehicleSearch" placeholder="Fahrzeug, Kennzeichen oder Modell suchen...">
+<div class="filters">
+<div>
+<label for="vehicleStatusFilter">Status</label>
+<select id="vehicleStatusFilter">
+<option value="">Alle Status</option>
+<option>In Verwendung</option>
+<option>Beschädigt</option>
+<option>Wartung fällig</option>
+<option>Lager</option>
+</select>
+</div>
+<div>
+<label for="vehiclePersonFilter">Fahrer</label>
+<select id="vehiclePersonFilter">
+<option value="">Alle Fahrer</option>
+</select>
+</div>
+<div>
+<label for="vehicleTypeFilter">Fahrzeugart</label>
+<select id="vehicleTypeFilter">
+<option value="">Alle Fahrzeugarten</option>
+</select>
+</div>
+<div>
+<label for="vehicleSort">Sortieren nach</label>
+<select id="vehicleSort">
+<option value="name">Name A–Z</option>
+<option value="registration">Kennzeichen A–Z</option>
+<option value="person">Fahrer A–Z</option>
+<option value="type">Fahrzeugart A–Z</option>
+</select>
+</div>
+</div>
+<div id="vehicleList"></div>
+</section>
+
 <section id="page-add" class="page hidden">
 <h2>Neues Gerät hinzufügen</h2>
 <div class="card">
 <form id="deviceForm">
 <label>Gerätename *</label>
 <input id="deviceName" required placeholder="z. B. Akkuschrauber">
+<label>Geräteart</label>
+<input id="deviceType" placeholder="z. B. Werkzeug, Funkgerät, Maschine">
 <label>Hersteller</label>
 <input id="manufacturer" placeholder="z. B. Bosch">
 <label>Modell</label>
@@ -154,14 +259,39 @@ hr{border:0;border-top:1px solid #e5eaf0;margin:18px 0}
 <label>Kaufdatum</label>
 <input id="purchaseDate" type="date">
 <label>Notizen</label>
-<textarea id="notes" placeholder="Weitere Informationen"></textarea>
+<textarea id="notes"></textarea>
 <button type="submit">Gerät speichern</button>
 </form>
 <p class="muted">Für das Anlegen eines Gerätes wird der Admin-PIN benötigt.</p>
 </div>
 
 <hr>
-<h3>Neue Person hinzufügen</h3>
+<h2>Neues Fahrzeug hinzufügen</h2>
+<div class="card">
+<form id="vehicleForm">
+<label>Fahrzeugname *</label>
+<input id="vehicleName" required placeholder="z. B. Transporter 1">
+<label>Kennzeichen</label>
+<input id="vehicleRegistration" placeholder="z. B. RI-AB 123">
+<label>Fahrzeugart</label>
+<input id="vehicleType" placeholder="z. B. PKW, Transporter, LKW">
+<label>Hersteller</label>
+<input id="vehicleManufacturer" placeholder="z. B. Mercedes">
+<label>Modell</label>
+<input id="vehicleModel" placeholder="z. B. Sprinter">
+<label>Kilometerstand</label>
+<input id="vehicleMileage" type="number" min="0" placeholder="z. B. 85000">
+<label>Nächste Überprüfung / Pickerl</label>
+<input id="vehicleInspection" type="date">
+<label>Notizen</label>
+<textarea id="vehicleNotes"></textarea>
+<button type="submit">Fahrzeug speichern</button>
+</form>
+<p class="muted">Für das Anlegen eines Fahrzeugs wird der Admin-PIN benötigt.</p>
+</div>
+
+<hr>
+<h2>Neue Person hinzufügen</h2>
 <div class="card">
 <form id="personForm">
 <label>Name des Mitarbeiters</label>
@@ -172,7 +302,6 @@ hr{border:0;border-top:1px solid #e5eaf0;margin:18px 0}
 </div>
 </section>
 
-<!-- WARTUNG -->
 <section id="page-maintenance" class="page hidden">
 <h2>Wartung</h2>
 <div class="card">
@@ -181,7 +310,7 @@ hr{border:0;border-top:1px solid #e5eaf0;margin:18px 0}
 <label>Gerät</label>
 <select id="maintenanceDevice" required></select>
 <label>Beschreibung</label>
-<textarea id="maintenanceDescription" required placeholder="Welche Wartung ist notwendig?"></textarea>
+<textarea id="maintenanceDescription" required></textarea>
 <label>Fälligkeitsdatum</label>
 <input id="maintenanceDate" type="date">
 <button type="submit">Wartung eintragen</button>
@@ -190,7 +319,6 @@ hr{border:0;border-top:1px solid #e5eaf0;margin:18px 0}
 <div id="maintenanceList"></div>
 </section>
 
-<!-- SCHÄDEN -->
 <section id="page-damage" class="page hidden">
 <h2>Schadensmeldungen</h2>
 <div class="card">
@@ -198,7 +326,9 @@ hr{border:0;border-top:1px solid #e5eaf0;margin:18px 0}
 <form id="damageForm">
 <label>Gerät</label>
 <select id="damageDevice" required></select>
-<label>Beschreibung des Schadens</label>
+<label>Name des Meldenden *</label>
+<input id="damageReporter" required placeholder="Vor- und Nachname">
+<label>Beschreibung des Schadens *</label>
 <textarea id="damageDescription" required placeholder="Was ist passiert?"></textarea>
 <button type="submit">Schaden melden</button>
 </form>
@@ -218,7 +348,6 @@ const SUPABASE_URL = "https://mfyukedisidacmcbegbj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_O03wMjdn_G6TMGpS7bLXOg_HNNLd28n";
 
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-
 const $ = id => document.getElementById(id);
 
 let currentUser = null;
@@ -226,6 +355,7 @@ let companyId = null;
 let companyName = "";
 let devices = [];
 let people = [];
+let vehicles = [];
 let maintenanceItems = [];
 let damageItems = [];
 
@@ -240,14 +370,9 @@ function showSection(section) {
   $(section).classList.remove("hidden");
 }
 
-function escapeText(value) {
-  return String(value ?? "");
-}
-
-async function askPin() {
+function askPin() {
   const pin = prompt("Bitte vierstelligen Admin-PIN eingeben:");
   if (pin === null) return null;
-
   if (!/^[0-9]{4}$/.test(pin)) {
     message("Der Admin-PIN muss aus genau vier Ziffern bestehen.");
     return null;
@@ -259,12 +384,10 @@ async function verifyPin(pin) {
   const { data, error } = await db.rpc("verify_admin_pin", {
     p_pin: pin
   });
-
   if (error) {
     message("PIN-Prüfung fehlgeschlagen: " + error.message);
     return false;
   }
-
   if (data !== true) {
     message("Falscher PIN oder PIN-Sperre aktiv.");
     return false;
@@ -273,7 +396,7 @@ async function verifyPin(pin) {
 }
 
 async function adminAction(rpcName, args) {
-  const pin = await askPin();
+  const pin = askPin();
   if (pin === null) return null;
 
   const { data, error } = await db.rpc(rpcName, {
@@ -285,12 +408,10 @@ async function adminAction(rpcName, args) {
     message("Fehler: " + error.message);
     return null;
   }
-
   if (data === null || data === false) {
     message("Aktion nicht möglich. PIN prüfen oder Berechtigung kontrollieren.");
     return null;
   }
-
   return data;
 }
 
@@ -336,7 +457,6 @@ async function initialiseUser(user) {
   companyName = company.name;
   $("companyLabel").textContent = companyName;
   showSection("appSection");
-
   await loadAll();
 }
 
@@ -347,11 +467,11 @@ async function loadAll() {
     db.from("devices").select("*").eq("company_id", companyId).order("created_at", {ascending:false}),
     db.from("people").select("*").eq("company_id", companyId).order("name"),
     db.from("maintenance").select("*").eq("company_id", companyId).order("created_at", {ascending:false}),
-    db.from("damage_reports").select("*").eq("company_id", companyId).order("created_at", {ascending:false})
+    db.from("damage_reports").select("*").eq("company_id", companyId).order("created_at", {ascending:false}),
+    db.from("vehicles").select("*").eq("company_id", companyId).order("created_at", {ascending:false})
   ]);
 
-  const names = ["Geräte","Personen","Wartung","Schäden"];
-
+  const names = ["Geräte","Personen","Wartung","Schäden","Fahrzeuge"];
   for (let i = 0; i < results.length; i++) {
     if (results[i].error) {
       message(names[i] + " konnten nicht geladen werden: " + results[i].error.message);
@@ -363,6 +483,7 @@ async function loadAll() {
   people = results[1].data || [];
   maintenanceItems = results[2].data || [];
   damageItems = results[3].data || [];
+  vehicles = results[4].data || [];
 
   renderAll();
 }
@@ -381,32 +502,67 @@ function makeCard(title, detail) {
   const heading = document.createElement("h3");
   heading.textContent = title;
   const paragraph = document.createElement("p");
-  paragraph.textContent = detail;
+  paragraph.textContent = detail || "";
   card.append(heading, paragraph);
   return card;
+}
+
+function personName(id) {
+  return people.find(p => String(p.id) === String(id))?.name || "Niemand zugewiesen";
 }
 
 function renderAll() {
   renderDashboard();
   renderDevices();
   renderPeople();
+  renderVehicles();
   renderMaintenance();
   renderDamage();
   updateDeviceDropdowns();
+  updateFilterDropdowns();
 }
 
 function renderDashboard() {
   $("total").textContent = devices.length;
-  $("active").textContent =
-    devices.filter(d => d.status === "In Verwendung").length;
-  $("damaged").textContent =
-    devices.filter(d => d.status === "Beschädigt").length;
-  $("maintenanceCount").textContent =
-    devices.filter(d => d.status === "Wartung fällig").length;
+  $("active").textContent = devices.filter(d => d.status === "In Verwendung").length;
+  $("damaged").textContent = devices.filter(d => d.status === "Beschädigt").length;
+  $("maintenanceCount").textContent = devices.filter(d => d.status === "Wartung fällig").length;
+  $("storage").textContent = devices.filter(d => d.status === "Lager").length;
+  $("vehicleTotal").textContent = vehicles.length;
 }
 
-function personName(id) {
-  return people.find(p => p.id === id)?.name || "Niemand zugewiesen";
+function updateFilterDropdowns() {
+  const devicePerson = $("devicePersonFilter");
+  const vehiclePerson = $("vehiclePersonFilter");
+  const deviceType = $("deviceTypeFilter");
+  const vehicleType = $("vehicleTypeFilter");
+
+  const keepDevicePerson = devicePerson.value;
+  const keepVehiclePerson = vehiclePerson.value;
+  const keepDeviceType = deviceType.value;
+  const keepVehicleType = vehicleType.value;
+
+  devicePerson.replaceChildren(new Option("Alle Mitarbeiter",""));
+  vehiclePerson.replaceChildren(new Option("Alle Fahrer",""));
+  deviceType.replaceChildren(new Option("Alle Gerätearten",""));
+  vehicleType.replaceChildren(new Option("Alle Fahrzeugarten",""));
+
+  people.forEach(p => {
+    devicePerson.add(new Option(p.name,p.id));
+    vehiclePerson.add(new Option(p.name,p.id));
+  });
+
+  [...new Set(devices.map(d => d.device_type).filter(Boolean))].sort().forEach(t =>
+    deviceType.add(new Option(t,t))
+  );
+  [...new Set(vehicles.map(v => v.vehicle_type).filter(Boolean))].sort().forEach(t =>
+    vehicleType.add(new Option(t,t))
+  );
+
+  devicePerson.value = keepDevicePerson;
+  vehiclePerson.value = keepVehiclePerson;
+  deviceType.value = keepDeviceType;
+  vehicleType.value = keepVehicleType;
 }
 
 function renderDevices() {
@@ -414,11 +570,29 @@ function renderDevices() {
   container.replaceChildren();
 
   const q = $("deviceSearch").value.toLowerCase();
+  const statusFilter = $("deviceStatusFilter").value;
+  const personFilter = $("devicePersonFilter").value;
+  const typeFilter = $("deviceTypeFilter").value;
 
-  const filtered = devices.filter(d =>
-    [d.device_name,d.device_number,d.manufacturer,d.model,d.location]
-      .some(v => (v || "").toLowerCase().includes(q))
-  );
+  let filtered = devices.filter(d => {
+    const matchesSearch = [
+      d.device_name,d.device_number,d.manufacturer,d.model,d.location,d.device_type
+    ].some(v => String(v || "").toLowerCase().includes(q));
+
+    return matchesSearch &&
+      (!statusFilter || d.status === statusFilter) &&
+      (!personFilter || String(d.assigned_person_id) === personFilter) &&
+      (!typeFilter || d.device_type === typeFilter);
+  });
+
+  const sort = $("deviceSort").value;
+  filtered.sort((a,b) => {
+    if (sort === "name-desc") return (b.device_name || "").localeCompare(a.device_name || "");
+    if (sort === "person") return personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id));
+    if (sort === "type") return (a.device_type || "").localeCompare(b.device_type || "");
+    if (sort === "status") return (a.status || "").localeCompare(b.status || "");
+    return (a.device_name || "").localeCompare(b.device_name || "");
+  });
 
   if (!filtered.length) {
     container.textContent = "Keine Geräte gefunden.";
@@ -435,10 +609,7 @@ function renderDevices() {
     const detail = document.createElement("p");
     detail.className = "muted";
     detail.textContent = [
-      d.device_number,
-      d.manufacturer,
-      d.model,
-      d.location
+      d.device_number,d.device_type,d.manufacturer,d.model,d.location
     ].filter(Boolean).join(" · ");
 
     const assigned = document.createElement("p");
@@ -447,48 +618,29 @@ function renderDevices() {
     const statusLabel = document.createElement("label");
     statusLabel.textContent = "Status – ohne PIN änderbar";
 
-    const status = document.createElement("select");
-    ["Lager","In Verwendung","Beschädigt","Wartung fällig"].forEach(s => {
-      const option = document.createElement("option");
-      option.value = s;
-      option.textContent = s;
-      status.appendChild(option);
-    });
+    const status = new SelectElement();
+    ["Lager","In Verwendung","Beschädigt","Wartung fällig"].forEach(s =>
+      status.add(new Option(s,s))
+    );
     status.value = d.status || "Lager";
-    status.addEventListener("change", () => updateDevice(d.id, {status:status.value}));
+    status.addEventListener("change", () => updateDevice(d.id,{status:status.value}));
 
     const personLabel = document.createElement("label");
     personLabel.textContent = "Mitarbeiter zuweisen – ohne PIN";
 
     const personSelect = document.createElement("select");
-    const empty = document.createElement("option");
-    empty.value = "";
-    empty.textContent = "Niemand / zurückgeben";
-    personSelect.appendChild(empty);
-
-    people.forEach(p => {
-      const option = document.createElement("option");
-      option.value = p.id;
-      option.textContent = p.name;
-      personSelect.appendChild(option);
-    });
-
+    personSelect.add(new Option("Niemand / zurückgeben",""));
+    people.forEach(p => personSelect.add(new Option(p.name,p.id)));
     personSelect.value = d.assigned_person_id || "";
     personSelect.addEventListener("change", () =>
-      updateDevice(d.id, {
-        assigned_person_id: personSelect.value || null
-      })
+      updateDevice(d.id,{assigned_person_id:personSelect.value || null})
     );
 
     const qr = document.createElement("img");
     qr.className = "qr";
     qr.alt = "QR-Code für " + d.device_name;
-
-    const qrUrl = location.origin + location.pathname +
-      "?device=" + encodeURIComponent(d.id);
-
-    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" +
-      encodeURIComponent(qrUrl);
+    const qrUrl = location.origin + location.pathname + "?device=" + encodeURIComponent(d.id);
+    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" + encodeURIComponent(qrUrl);
 
     const qrLink = document.createElement("a");
     qrLink.href = qr.src;
@@ -502,12 +654,14 @@ function renderDevices() {
       makeButton("Gerät löschen","danger",() => removeDevice(d.id))
     );
 
-    card.append(
-      title, detail, assigned, statusLabel, status,
-      personLabel, personSelect, qr, qrLink, actions
-    );
+    card.append(title,detail,assigned,statusLabel,status,personLabel,personSelect,qr,qrLink,actions);
     container.appendChild(card);
   });
+}
+
+/* Kleiner Helfer für die Status-Auswahl */
+function SelectElement() {
+  return document.createElement("select");
 }
 
 async function updateDevice(id, values) {
@@ -521,30 +675,25 @@ async function updateDevice(id, values) {
     await loadAll();
     return;
   }
-
   message("Änderung gespeichert.");
   await loadAll();
 }
 
 async function editDevice(d) {
-  const pin = await askPin();
+  const pin = askPin();
   if (pin === null) return;
-
-  const ok = await verifyPin(pin);
-  if (!ok) return;
+  if (!await verifyPin(pin)) return;
 
   const name = prompt("Gerätename:",d.device_name);
   if (name === null) return;
-
+  const type = prompt("Geräteart:",d.device_type || "");
+  if (type === null) return;
   const manufacturer = prompt("Hersteller:",d.manufacturer || "");
   if (manufacturer === null) return;
-
   const model = prompt("Modell:",d.model || "");
   if (model === null) return;
-
   const locationValue = prompt("Standort:",d.location || "");
   if (locationValue === null) return;
-
   const notesValue = prompt("Notizen:",d.notes || "");
   if (notesValue === null) return;
 
@@ -560,20 +709,31 @@ async function editDevice(d) {
 
   if (error) {
     message("Bearbeiten fehlgeschlagen: " + error.message);
-  } else if (!data) {
+    return;
+  }
+  if (!data) {
     message("Änderung nicht möglich. PIN prüfen.");
+    return;
+  }
+
+  const {data:typeData,error:typeError} = await db.rpc("set_device_type_admin",{
+    p_pin:pin,
+    p_id:d.id,
+    p_device_type:type.trim()
+  });
+
+  if (typeError || !typeData) {
+    message("Gerätedaten gespeichert, aber Geräteart konnte nicht geändert werden: " + (typeError?.message || "PIN prüfen."));
   } else {
     message("Gerätedaten gespeichert.");
-    await loadAll();
   }
+  await loadAll();
 }
 
 async function removeDevice(id) {
   if (!confirm("Gerät wirklich endgültig löschen?")) return;
-
   const result = await adminAction("delete_device",{p_id:id});
   if (result === null) return;
-
   message("Gerät gelöscht.");
   await loadAll();
 }
@@ -598,19 +758,15 @@ function renderPeople() {
 }
 
 async function editPerson(p) {
-  const pin = await askPin();
+  const pin = askPin();
   if (pin === null) return;
-
-  const ok = await verifyPin(pin);
-  if (!ok) return;
+  if (!await verifyPin(pin)) return;
 
   const name = prompt("Neuer Name:",p.name);
   if (name === null) return;
 
   const {data,error} = await db.rpc("update_person",{
-    p_pin:pin,
-    p_id:p.id,
-    p_name:name.trim()
+    p_pin:pin,p_id:p.id,p_name:name.trim()
   });
 
   if (error) message("Fehler: " + error.message);
@@ -623,11 +779,174 @@ async function editPerson(p) {
 
 async function removePerson(id) {
   if (!confirm("Person wirklich löschen? Zugewiesene Geräte werden freigegeben.")) return;
-
   const result = await adminAction("delete_person",{p_id:id});
   if (result === null) return;
-
   message("Person gelöscht.");
+  await loadAll();
+}
+
+function renderVehicles() {
+  const container = $("vehicleList");
+  container.replaceChildren();
+
+  const q = $("vehicleSearch").value.toLowerCase();
+  const statusFilter = $("vehicleStatusFilter").value;
+  const personFilter = $("vehiclePersonFilter").value;
+  const typeFilter = $("vehicleTypeFilter").value;
+
+  let filtered = vehicles.filter(v => {
+    const matchesSearch = [
+      v.vehicle_name,v.registration_number,v.vehicle_type,
+      v.manufacturer,v.model,v.notes
+    ].some(x => String(x || "").toLowerCase().includes(q));
+
+    return matchesSearch &&
+      (!statusFilter || v.status === statusFilter) &&
+      (!personFilter || String(v.assigned_person_id) === personFilter) &&
+      (!typeFilter || v.vehicle_type === typeFilter);
+  });
+
+  const sort = $("vehicleSort").value;
+  filtered.sort((a,b) => {
+    if (sort === "registration") return (a.registration_number || "").localeCompare(b.registration_number || "");
+    if (sort === "person") return personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id));
+    if (sort === "type") return (a.vehicle_type || "").localeCompare(b.vehicle_type || "");
+    return (a.vehicle_name || "").localeCompare(b.vehicle_name || "");
+  });
+
+  if (!filtered.length) {
+    container.textContent = "Keine Fahrzeuge gefunden.";
+    return;
+  }
+
+  filtered.forEach(v => {
+    const card = document.createElement("div");
+    card.className = "card vehicle";
+
+    const title = document.createElement("h3");
+    title.textContent = v.vehicle_name;
+
+    const detail = document.createElement("p");
+    detail.className = "muted";
+    detail.textContent = [
+      v.registration_number,v.vehicle_type,v.manufacturer,v.model
+    ].filter(Boolean).join(" · ");
+
+    const mileage = document.createElement("p");
+    mileage.textContent = "Kilometerstand: " +
+      (v.mileage === null || v.mileage === undefined ? "Nicht eingetragen" : Number(v.mileage).toLocaleString("de-AT") + " km");
+
+    const inspection = document.createElement("p");
+    inspection.textContent = "Nächste Überprüfung: " + (v.inspection_due || "Nicht eingetragen");
+
+    const assigned = document.createElement("p");
+    assigned.textContent = "Zugewiesener Fahrer: " + personName(v.assigned_person_id);
+
+    const statusLabel = document.createElement("label");
+    statusLabel.textContent = "Fahrzeugstatus – ohne PIN änderbar";
+
+    const status = document.createElement("select");
+    ["Lager","In Verwendung","Beschädigt","Wartung fällig"].forEach(s =>
+      status.add(new Option(s,s))
+    );
+    status.value = v.status || "Lager";
+    status.addEventListener("change",() => updateVehicle(v.id,{status:status.value}));
+
+    const personLabel = document.createElement("label");
+    personLabel.textContent = "Fahrer zuweisen – ohne PIN";
+
+    const personSelect = document.createElement("select");
+    personSelect.add(new Option("Niemand / zurückgeben",""));
+    people.forEach(p => personSelect.add(new Option(p.name,p.id)));
+    personSelect.value = v.assigned_person_id || "";
+    personSelect.addEventListener("change",() =>
+      updateVehicle(v.id,{assigned_person_id:personSelect.value || null})
+    );
+
+    const notes = document.createElement("p");
+    notes.className = "muted";
+    notes.textContent = v.notes || "";
+
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    actions.append(
+      makeButton("Fahrzeug bearbeiten","light",() => editVehicle(v)),
+      makeButton("Fahrzeug löschen","danger",() => removeVehicle(v.id))
+    );
+
+    card.append(title,detail,mileage,inspection,assigned,statusLabel,status,personLabel,personSelect,notes,actions);
+    container.appendChild(card);
+  });
+}
+
+async function updateVehicle(id,values) {
+  const {error} = await db.from("vehicles")
+    .update(values)
+    .eq("id",id)
+    .eq("company_id",companyId);
+
+  if (error) {
+    message("Fahrzeugänderung fehlgeschlagen: " + error.message);
+    await loadAll();
+    return;
+  }
+  message("Fahrzeugänderung gespeichert.");
+  await loadAll();
+}
+
+async function editVehicle(v) {
+  const pin = askPin();
+  if (pin === null) return;
+
+  const name = prompt("Fahrzeugname:",v.vehicle_name);
+  if (name === null) return;
+  const registration = prompt("Kennzeichen:",v.registration_number || "");
+  if (registration === null) return;
+  const type = prompt("Fahrzeugart:",v.vehicle_type || "");
+  if (type === null) return;
+  const manufacturer = prompt("Hersteller:",v.manufacturer || "");
+  if (manufacturer === null) return;
+  const model = prompt("Modell:",v.model || "");
+  if (model === null) return;
+  const mileageInput = prompt("Kilometerstand:",v.mileage ?? "");
+  if (mileageInput === null) return;
+  const inspection = prompt("Nächste Überprüfung (YYYY-MM-DD):",v.inspection_due || "");
+  if (inspection === null) return;
+  const notes = prompt("Notizen:",v.notes || "");
+  if (notes === null) return;
+
+  const mileage = mileageInput.trim() === "" ? null : Number(mileageInput);
+  if (mileage !== null && (!Number.isInteger(mileage) || mileage < 0)) {
+    message("Bitte einen gültigen Kilometerstand eingeben.");
+    return;
+  }
+
+  const {data,error} = await db.rpc("update_vehicle_master",{
+    p_pin:pin,
+    p_id:v.id,
+    p_vehicle_name:name.trim(),
+    p_registration_number:registration.trim(),
+    p_vehicle_type:type.trim(),
+    p_manufacturer:manufacturer.trim(),
+    p_model:model.trim(),
+    p_mileage:mileage,
+    p_inspection_due:inspection.trim() || null,
+    p_notes:notes.trim()
+  });
+
+  if (error) message("Fahrzeug konnte nicht bearbeitet werden: " + error.message);
+  else if (!data) message("Änderung nicht möglich. PIN prüfen.");
+  else {
+    message("Fahrzeugdaten gespeichert.");
+    await loadAll();
+  }
+}
+
+async function removeVehicle(id) {
+  if (!confirm("Fahrzeug wirklich endgültig löschen?")) return;
+  const result = await adminAction("delete_vehicle",{p_id:id});
+  if (result === null) return;
+  message("Fahrzeug gelöscht.");
   await loadAll();
 }
 
@@ -636,18 +955,9 @@ function updateDeviceDropdowns() {
     const select = $(id);
     const previous = select.value;
     select.replaceChildren();
+    select.add(new Option("Gerät auswählen",""));
 
-    const first = document.createElement("option");
-    first.value = "";
-    first.textContent = "Gerät auswählen";
-    select.appendChild(first);
-
-    devices.forEach(d => {
-      const option = document.createElement("option");
-      option.value = d.id;
-      option.textContent = d.device_name;
-      select.appendChild(option);
-    });
+    devices.forEach(d => select.add(new Option(d.device_name,d.id)));
 
     if (devices.some(d => String(d.id) === previous)) {
       select.value = previous;
@@ -665,7 +975,7 @@ function renderMaintenance() {
   }
 
   maintenanceItems.forEach(item => {
-    const device = devices.find(d => d.id === item.device_id);
+    const device = devices.find(d => String(d.id) === String(item.device_id));
     const card = makeCard(
       device?.device_name || "Gerät",
       item.description + (item.due_date ? " · Fällig: " + item.due_date : "")
@@ -705,52 +1015,71 @@ function renderDamage() {
   }
 
   damageItems.forEach(item => {
-    const device = devices.find(d => d.id === item.device_id);
-    container.appendChild(makeCard(
+    const device = devices.find(d => String(d.id) === String(item.device_id));
+    const card = makeCard(
       device?.device_name || "Gerät",
       item.description + " · " + new Date(item.created_at).toLocaleString("de-AT")
-    ));
+    );
+
+    const reporter = document.createElement("p");
+    reporter.textContent = "Gemeldet von: " + (item.reporter_name || "Nicht erfasst");
+    card.appendChild(reporter);
+    container.appendChild(card);
   });
 }
 
-/* NAVIGATION */
-document.querySelectorAll("[data-page]").forEach(button => {
+/* Navigation */
+function navigate(page) {
+  document.querySelectorAll("[data-page]").forEach(b =>
+    b.classList.toggle("selected",b.dataset.page === page)
+  );
+  document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+  $("page-" + page).classList.remove("hidden");
+
+  const titles = {
+    dashboard:"Dashboard",
+    devices:"Geräte",
+    people:"Personen",
+    vehicles:"Fahrzeuge",
+    add:"Hinzufügen",
+    maintenance:"Wartung",
+    damage:"Schäden"
+  };
+  $("companyHeading").textContent = titles[page] || "GerätePass";
+}
+
+document.querySelectorAll("[data-page]").forEach(button =>
+  button.addEventListener("click",() => navigate(button.dataset.page))
+);
+
+document.querySelectorAll("[data-goto]").forEach(button =>
+  button.addEventListener("click",() => navigate(button.dataset.goto))
+);
+
+/* Dashboard-Kacheln */
+document.querySelectorAll("[data-status]").forEach(button => {
   button.addEventListener("click",() => {
-    document.querySelectorAll("[data-page]").forEach(b => b.classList.remove("selected"));
-    button.classList.add("selected");
-
-    document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
-    $("page-" + button.dataset.page).classList.remove("hidden");
-
-    const titles = {
-      dashboard:"Dashboard",
-      devices:"Geräte",
-      people:"Personen",
-      add:"Hinzufügen",
-      maintenance:"Wartung",
-      damage:"Schäden"
-    };
-    $("companyHeading").textContent = titles[button.dataset.page];
+    const status = button.dataset.status;
+    $("deviceStatusFilter").value = status === "ALL" ? "" : status;
+    navigate("devices");
+    renderDevices();
   });
 });
 
-/* LOGIN */
+/* Anmeldung */
 $("loginForm").addEventListener("submit",async e => {
   e.preventDefault();
   message("Anmeldung läuft...");
-
   const {error} = await db.auth.signInWithPassword({
     email:$("email").value.trim(),
     password:$("password").value
   });
-
   if (error) message("Anmeldung fehlgeschlagen: " + error.message);
 });
 
 $("registerForm").addEventListener("submit",async e => {
   e.preventDefault();
   message("Konto wird erstellt...");
-
   const {data,error} = await db.auth.signUp({
     email:$("regEmail").value.trim(),
     password:$("regPassword").value
@@ -760,25 +1089,24 @@ $("registerForm").addEventListener("submit",async e => {
     message("Registrierung fehlgeschlagen: " + error.message);
     return;
   }
-
   if (data.session) {
     await initialiseUser(data.user);
   } else {
-    message("Konto erstellt. Falls eine E-Mail-Bestätigung verlangt wird, bestätige zuerst deine E-Mail und melde dich danach an.");
+    message("Konto erstellt. Bitte gegebenenfalls E-Mail bestätigen und danach anmelden.");
   }
 });
 
-/* FIRMA EINRICHTEN */
+/* Firma einrichten */
 $("setupForm").addEventListener("submit",async e => {
   e.preventDefault();
-
   const pin = $("adminPinSetup").value;
+
   if (!/^[0-9]{4}$/.test(pin)) {
     message("Bitte einen vierstelligen PIN eingeben.");
     return;
   }
 
-  const {data,error} = await db.rpc("setup_company",{
+  const {error} = await db.rpc("setup_company",{
     p_company_name:$("companyName").value.trim(),
     p_admin_pin:pin
   });
@@ -787,16 +1115,15 @@ $("setupForm").addEventListener("submit",async e => {
     message("Firma konnte nicht eingerichtet werden: " + error.message);
     return;
   }
-
   message("Firma erfolgreich eingerichtet.");
   await initialiseUser(currentUser);
 });
 
-/* GERÄT ANLEGEN */
+/* Gerät anlegen */
 $("deviceForm").addEventListener("submit",async e => {
   e.preventDefault();
 
-  const pin = await askPin();
+  const pin = askPin();
   if (pin === null) return;
 
   const {data,error} = await db.rpc("create_device",{
@@ -814,33 +1141,81 @@ $("deviceForm").addEventListener("submit",async e => {
     message("Gerät konnte nicht gespeichert werden: " + error.message);
     return;
   }
-
   if (!data) {
     message("Gerät nicht gespeichert. PIN prüfen.");
     return;
   }
 
+  const {data:typeData,error:typeError} = await db.rpc("set_device_type_admin",{
+    p_pin:pin,
+    p_id:data,
+    p_device_type:$("deviceType").value.trim()
+  });
+
+  if (typeError || !typeData) {
+    message("Gerät wurde angelegt, aber Geräteart konnte nicht gespeichert werden: " + (typeError?.message || "PIN prüfen."));
+  } else {
+    message("Gerät erfolgreich angelegt.");
+  }
+
   e.target.reset();
-  message("Gerät erfolgreich angelegt.");
   await loadAll();
 });
 
-/* PERSON ANLEGEN */
-$("personForm").addEventListener("submit",async e => {
+/* Fahrzeug anlegen */
+$("vehicleForm").addEventListener("submit",async e => {
   e.preventDefault();
 
+  const pin = askPin();
+  if (pin === null) return;
+
+  const mileageText = $("vehicleMileage").value.trim();
+  const mileage = mileageText === "" ? null : Number(mileageText);
+
+  if (mileage !== null && (!Number.isInteger(mileage) || mileage < 0)) {
+    message("Bitte einen gültigen Kilometerstand eingeben.");
+    return;
+  }
+
+  const {data,error} = await db.rpc("create_vehicle",{
+    p_pin:pin,
+    p_vehicle_name:$("vehicleName").value.trim(),
+    p_registration_number:$("vehicleRegistration").value.trim(),
+    p_vehicle_type:$("vehicleType").value.trim(),
+    p_manufacturer:$("vehicleManufacturer").value.trim(),
+    p_model:$("vehicleModel").value.trim(),
+    p_mileage:mileage,
+    p_inspection_due:$("vehicleInspection").value || null,
+    p_notes:$("vehicleNotes").value.trim()
+  });
+
+  if (error) {
+    message("Fahrzeug konnte nicht gespeichert werden: " + error.message);
+    return;
+  }
+  if (!data) {
+    message("Fahrzeug nicht gespeichert. PIN prüfen.");
+    return;
+  }
+
+  e.target.reset();
+  message("Fahrzeug erfolgreich angelegt.");
+  await loadAll();
+});
+
+/* Person anlegen */
+$("personForm").addEventListener("submit",async e => {
+  e.preventDefault();
   const result = await adminAction("create_person",{
     p_name:$("personName").value.trim()
   });
-
   if (result === null) return;
-
   e.target.reset();
   message("Person erfolgreich angelegt.");
   await loadAll();
 });
 
-/* WARTUNG */
+/* Wartung */
 $("maintenanceForm").addEventListener("submit",async e => {
   e.preventDefault();
 
@@ -867,13 +1242,25 @@ $("maintenanceForm").addEventListener("submit",async e => {
   await loadAll();
 });
 
-/* SCHADEN MELDEN */
+/* Schaden melden – Name ist Pflicht */
 $("damageForm").addEventListener("submit",async e => {
   e.preventDefault();
 
   const deviceId = $("damageDevice").value;
+  const reporterName = $("damageReporter").value.trim();
+  const description = $("damageDescription").value.trim();
+
   if (!deviceId) {
     message("Bitte ein Gerät auswählen.");
+    return;
+  }
+  if (!reporterName) {
+    message("Bitte den Namen des Meldenden eintragen.");
+    $("damageReporter").focus();
+    return;
+  }
+  if (!description) {
+    message("Bitte den Schaden beschreiben.");
     return;
   }
 
@@ -881,7 +1268,8 @@ $("damageForm").addEventListener("submit",async e => {
     company_id:companyId,
     device_id:Number(deviceId),
     reported_by:currentUser.id,
-    description:$("damageDescription").value.trim()
+    reporter_name:reporterName,
+    description
   });
 
   if (error) {
@@ -894,15 +1282,27 @@ $("damageForm").addEventListener("submit",async e => {
   await loadAll();
 });
 
-/* SUCHE */
-$("deviceSearch").addEventListener("input",renderDevices);
+/* Filter und Suche */
+[
+  "deviceSearch","deviceStatusFilter","devicePersonFilter",
+  "deviceTypeFilter","deviceSort"
+].forEach(id => $(id).addEventListener(
+  id === "deviceSearch" ? "input" : "change",renderDevices
+));
 
-/* ABMELDEN */
+[
+  "vehicleSearch","vehicleStatusFilter","vehiclePersonFilter",
+  "vehicleTypeFilter","vehicleSort"
+].forEach(id => $(id).addEventListener(
+  id === "vehicleSearch" ? "input" : "change",renderVehicles
+));
+
+/* Abmelden */
 $("logout").addEventListener("click",async () => {
   await db.auth.signOut();
 });
 
-/* AUTH-STATUS */
+/* Auth-Status */
 db.auth.onAuthStateChange((event,session) => {
   if (event === "SIGNED_OUT") {
     currentUser = null;
@@ -911,11 +1311,11 @@ db.auth.onAuthStateChange((event,session) => {
   }
 });
 
-/* START */
+/* Start */
 const {data:{session}} = await db.auth.getSession();
 await initialiseUser(session?.user || null);
 
-/* QR-LINK: Gerät nach dem Öffnen hervorheben */
+/* QR-Link: Gerät nach Öffnen hervorheben */
 const params = new URLSearchParams(location.search);
 const requestedDevice = params.get("device");
 
@@ -923,7 +1323,7 @@ if (requestedDevice && session?.user) {
   setTimeout(() => {
     const target = devices.find(d => String(d.id) === requestedDevice);
     if (target) {
-      document.querySelector('[data-page="devices"]').click();
+      navigate("devices");
       message("QR-Code geöffnet: " + target.device_name);
     }
   },500);
