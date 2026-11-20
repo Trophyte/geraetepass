@@ -506,36 +506,99 @@ async function changeStatus(table,id,newStatus,isVehicle=false){
 }
 
 function renderDevices(){
- renderStatusTiles();const box=$("deviceList");box.replaceChildren();
- const q=$("deviceSearch").value.toLowerCase(),pf=$("devicePersonFilter").value,tf=$("deviceTypeFilter").value;
- let rows=devices.filter(d=>d.status===activeDeviceStatus&&[d.device_name,d.device_number,d.serial_number,d.manufacturer,d.model,d.location,d.device_type].some(x=>String(x||"").toLowerCase().includes(q))&&(!pf||String(d.assigned_person_id)===pf)&&(!tf||d.device_type===tf));
+ renderStatusTiles();
+ const box=$("deviceList");
+ box.replaceChildren();
+
+ const q=$("deviceSearch").value.toLowerCase();
+ const pf=$("devicePersonFilter").value;
+ const tf=$("deviceTypeFilter").value;
+
+ let rows=devices.filter(d=>
+  d.status===activeDeviceStatus&&
+  [d.device_name,d.device_number,d.serial_number,d.manufacturer,d.model,d.location,d.device_type]
+   .some(x=>String(x||"").toLowerCase().includes(q))&&
+  (!pf||String(d.assigned_person_id)===pf)&&
+  (!tf||d.device_type===tf)
+ );
+
  const sort=$("deviceSort").value;
- rows.sort((a,b)=>sort==="name-desc"?(b.device_name||"").localeCompare(a.device_name||""):sort==="person"?personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id)):sort==="type"?(a.device_type||"").localeCompare(b.device_type||""):(a.device_name||"").localeCompare(b.device_name||""));
+
+ rows.sort((a,b)=>
+  sort==="name-desc"?(b.device_name||"").localeCompare(a.device_name||""):
+  sort==="person"?personName(a.assigned_person_id).localeCompare(personName(b.assigned_person_id)):
+  sort==="type"?(a.device_type||"").localeCompare(b.device_type||""):
+  (a.device_name||"").localeCompare(b.device_name||"")
+ );
+
  if(!rows.length){
-  const text=devices.length===0?"Noch keine Geräte angelegt. Lege das erste Gerät in der Administration an.":"Keine Geräte in diesem Bereich vorhanden.";
-  box.append(Object.assign(document.createElement("div"),{className:"empty",textContent:text}));return;
+  const text=devices.length===0
+   ?"Noch keine Geräte angelegt. Lege das erste Gerät in der Administration an."
+   :"Keine Geräte in diesem Bereich vorhanden.";
+  box.append(Object.assign(document.createElement("div"),{
+   className:"empty",
+   textContent:text
+  }));
+  return;
  }
+
  rows.forEach(d=>{
-  const c=document.createElement("div");c.className="card item-card "+statusClass(d.status);
-  const h=document.createElement("h3");h.textContent=d.device_name||"Gerät";
-  const info=document.createElement("p");info.className="muted";
-  info.textContent=["GerätePass-Nr.: "+(d.device_number||"Nicht vergeben"),d.device_type,d.manufacturer,d.model,d.location].filter(Boolean).join(" · ");
-  const serial=document.createElement("p");serial.className="muted";serial.textContent="Hersteller-Seriennummer: "+(d.serial_number||"Nicht eingetragen");
-  const due=document.createElement("p");due.className="muted";due.textContent="Nächste Prüfung / Wartung bis: "+(d.maintenance_due||"Nicht eingetragen");
-  const sl=document.createElement("label");sl.textContent="Status";let st;
-  if(d.status==="Beschädigt"){st=document.createElement("p");st.className="tag";st.textContent="Beschädigt · Reparatur im Admin-Bereich abschließen";}
-  else{
-   st=document.createElement("select");DEVICE_STATUSES.filter(x=>x!=="Beschädigt").forEach(x=>st.add(new Option(x,x)));
-   st.value=d.status||"Lager";st.addEventListener("change",()=>changeStatus("devices",d.id,st.value,false));
+  const c=document.createElement("div");
+  c.className="card item-card "+statusClass(d.status);
+
+  const h=document.createElement("h3");
+  h.textContent=d.device_name||"Gerät";
+
+  const info=document.createElement("p");
+  info.className="muted";
+  info.textContent=[
+   "GerätePass-Nr.: "+(d.device_number||"Nicht vergeben"),
+   d.device_type,d.manufacturer,d.model,d.location
+  ].filter(Boolean).join(" · ");
+
+  const serial=document.createElement("p");
+  serial.className="muted";
+  serial.textContent="Hersteller-Seriennummer: "+(d.serial_number||"Nicht eingetragen");
+
+  const due=document.createElement("p");
+  due.className="muted";
+  due.textContent="Nächste Prüfung / Wartung bis: "+(d.maintenance_due||"Nicht eingetragen");
+
+  const sl=document.createElement("label");
+  sl.textContent="Status";
+
+  let st;
+
+  if(d.status==="Beschädigt"){
+   st=document.createElement("p");
+   st.className="tag";
+   st.textContent="Beschädigt · Reparatur im Admin-Bereich abschließen";
+  }else{
+   st=document.createElement("select");
+   DEVICE_STATUSES.filter(x=>x!=="Beschädigt").forEach(x=>st.add(new Option(x,x)));
+   st.value=d.status||"Lager";
+   st.addEventListener("change",()=>changeStatus("devices",d.id,st.value,false));
   }
-  const pl=document.createElement("label");pl.textContent="Mitarbeiter zuweisen";
-  const person=document.createElement("select");person.add(new Option("Niemand / zurückgeben",""));
-  people.forEach(x=>person.add(new Option(x.name,x.id)));person.value=d.assigned_person_id||"";
+
+  const pl=document.createElement("label");
+  pl.textContent="Mitarbeiter zuweisen";
+
+  const person=document.createElement("select");
+  person.add(new Option("Niemand / zurückgeben",""));
+  people.forEach(x=>person.add(new Option(x.name,x.id)));
+  person.value=d.assigned_person_id||"";
   person.addEventListener("change",()=>changeAssignment("devices",d.id,person.value));
-  const actions=document.createElement("div");actions.className="actions";
-  actions.append(btn("Schaden melden","light",()=>openDamageFor("device",d.id)),btn("QR-Code anzeigen","light",()=>showQr("device",d.id,d.device_name||"Gerät")));
-  if(adminPin)actions.append(btn("Stammdaten bearbeiten","light",()=>editDevice(d)),btn("Gerät löschen","danger",()=>removeDevice(d.id)));
-  c.append(h,info,serial,due,sl,st,pl,person,actions);box.append(c);
+
+  const actions=document.createElement("div");
+  actions.className="actions";
+
+  actions.append(
+   btn("Schaden melden","light",()=>openDamageFor("device",d.id)),
+   btn("QR-Code anzeigen","light",()=>showQr("device",d.id,d.device_name||"Gerät"))
+  );
+
+  c.append(h,info,serial,due,sl,st,pl,person,actions);
+  box.append(c);
  });
 }
 function selectDeviceStatus(status){activeDeviceStatus=status;renderDevices();}
